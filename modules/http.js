@@ -13,7 +13,7 @@ exports.cookies = function(cookies) {
             cooks += cookie + ";";
         }
     }
-    
+
 }
 
 function tryAgain(payload, string){
