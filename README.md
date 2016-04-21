@@ -18,3 +18,8 @@ Enumerate an application post auth (uses same syntax as SQLMap)
 ```
 ./dirp.js -u 'https://foo.bar/' --cookie='sessionid=12345; foo:bar;'
 ```
+
+Enumerate a url, increase the speed by using more concurrent sockets.
+```
+./dirp.js -u 'https://foo.bar/' --rate=1000 (default is 500)
+```

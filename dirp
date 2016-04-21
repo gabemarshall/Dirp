@@ -15,8 +15,8 @@ if (argv.rate){
 }
 if (argv.help || argv.h) {
     console.log(color.green("\n--[Dirp Examples]--\n"));
-    //console.log("[1.] Scout a subnet for low hanging fruit on port 8080");
-    //console.log(color.blackBright("\n\t$> scout --ip=192.168.0.0/24 --port=8080\n"));
+    console.log("./dirp -u 'https://foo.bar/' --input=/path/to/wordlist.txt");
+    console.log();
 
 } else if (argv.u) {
 
