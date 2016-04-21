@@ -77,7 +77,7 @@ if (argv.help || argv.h) {
 
                   setTimeout(function() {
                       myHttpJobs.pause(false);
-                  },1000);
+                  },500);
               }
           });
 
