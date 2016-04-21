@@ -1,11 +1,11 @@
 {
-  "name": "Scout",
+  "name": "Dirp",
   "version": "0.0.1a",
-  "description": "A Redteam scouting utility",
-  "main": "bros.js",
+  "description": "A simplistic but fast Web Content Scanner written in nodejs.",
+  "main": "dirp.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gabemarshall/Scout.git"
+    "url": "https://github.com/gabemarshall/Dirp.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
