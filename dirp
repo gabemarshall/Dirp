@@ -6,6 +6,8 @@ var argv = require('yargs').argv,
     payloads = require('./modules/loadPayloads'),
     async = require('async'),
     fs = require('fs');
+    qjobs = new require('./modules/qjobs');
+    dictionaryFile = './default.txt';
 
 if (argv.help || argv.h) {
     console.log(color.green("\n--[Dirp Examples]--\n"));
@@ -19,39 +21,74 @@ if (argv.help || argv.h) {
     }
 
     if (argv.input) {
-        fs.readFile(argv.input, "utf8", function(err, data) {
-            var payloadArray = data.toString().split('\n');
-            console.log("\n[*] Using wordlist %s which contains %s checks\n", argv.input, payloadArray.length)
-            var count = 1;
-            var arrays = [];
-
-            async.each(payloadArray, function(path, callback) {
-                if (argv.string) {
-                    http.get(argv.u, path, argv.string);
-                } else {
-                    http.get(argv.u, path);
-                }
-
-            })
-
-
-        });
+      dictionaryFile = argv.input;
     } else {
-        fs.readFile('./default.txt', "utf8", function(err, data) {
+        fs.readFile(dictionaryFile, "utf8", function(err, data) {
             var payloadArray = data.toString().split('\n');
             console.log("\n[*] Using default wordlist which contains %s checks\n", payloadArray.length)
-            
+
             var count = 1;
             var arrays = [];
 
-            async.each(payloadArray, function(path, callback) {
-                if (argv.string) {
-                    http.get(argv.u, path, argv.string);
-                } else {
-                    http.get(argv.u, path);
-                }
+            var httpjob = function(args,next) {
+                http.get(argv.u, args[0], next);
+            }
 
-            })
+            var myHttpJobs = new qjobs({maxConcurrency:500});
+
+            for (var i = 0; i<payloadArray.length; i++) {
+                myHttpJobs.add(httpjob,[payloadArray[i]]);
+            }
+
+            // I want to know when the first job has started
+            myHttpJobs.on('start',function() {
+            });
+
+            // I want to know when the last job has ended
+            myHttpJobs.on('end',function() {
+                clearInterval(statId);
+                //console.log('end');
+                //console.log(JSON.stringify(myHttpJobs.stats()));
+            });
+
+            // I want to know when each job has started
+            myHttpJobs.on('jobStart',function(args) {
+                //console.log('jobStart',args);
+            });
+
+            // I want to know when each job has ended
+            myHttpJobs.on('jobEnd',function(args) {
+
+                //console.log('jobEnd',args);
+
+                // If i'm jobId 10, then make a pause of 5 sec
+                count++;
+
+                if ((count % 500) === 0) {
+                  console.log("Sleeping..")
+                    myHttpJobs.pause(true);
+
+                    setTimeout(function() {
+                        myHttpJobs.pause(false);
+                    },1000);
+                }
+            });
+
+            // I want to know if queue is in pause every sec
+            myHttpJobs.on('pause',function(since) {
+                console.log('in pause since '+since+' milliseconds');
+            });
+
+
+            // JOBS !! leeeeeeeeeet's staaaaaaaart !
+            myHttpJobs.run();
+
+            var statId = setInterval(function() {
+                //console.log(JSON.stringify(myHttpJobs.stats()));
+            },1000);
+
+
+
 
 
         });

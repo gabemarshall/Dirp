@@ -58,7 +58,7 @@ function clean(payload) {
     return s;
 }
 var count = 0
-exports.get = function(url, path, string) {
+exports.get = function(url, path, next, string) {
 
     var payload = clean(url + path);
     var test = '/('+string+')/'
@@ -88,13 +88,11 @@ exports.get = function(url, path, string) {
             if (count === 1){
                 console.log("\n[*] Dirp is checking %s\n", url)
             } else {
-                
+
             }
             count++;
+            next();
         } catch (err) {
-            setTimeout(function(){
-              tryAgain(payload, string);
-            }, 10000);
         }
 
     });

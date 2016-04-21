@@ -23,7 +23,8 @@
     "printf": "0.2.3",
     "qjobs": "1.1.4",
     "winston": "2.2.0",
-    "cheerio": "*"
+    "cheerio": "*",
+    "events": "*"
   },
   "author": "Gabe Marshall",
   "license": "ISC"
