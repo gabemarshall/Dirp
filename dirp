@@ -22,77 +22,84 @@ if (argv.help || argv.h) {
 
     if (argv.input) {
       dictionaryFile = argv.input;
-    } else {
-        fs.readFile(dictionaryFile, "utf8", function(err, data) {
-            var payloadArray = data.toString().split('\n');
-            console.log("\n[*] Using default wordlist which contains %s checks\n", payloadArray.length)
+    }
 
-            var count = 1;
-            var arrays = [];
+      fs.readFile(dictionaryFile, "utf8", function(err, data) {
+        console.log(data.length);
+          var payloadArray = data.toString().split('\n');
+          console.log("\n[*] Using default wordlist which contains %s checks\n", payloadArray.length)
 
-            var httpjob = function(args,next) {
-                http.get(argv.u, args[0], next);
-            }
+          var count = 1;
+          var arrays = [];
 
-            var myHttpJobs = new qjobs({maxConcurrency:500});
+          var httpjob = function(args,next) {
+              http.get(argv.u, args[0], next);
+          }
 
-            for (var i = 0; i<payloadArray.length; i++) {
-                myHttpJobs.add(httpjob,[payloadArray[i]]);
-            }
+          var myHttpJobs = new qjobs({maxConcurrency:500});
 
-            // I want to know when the first job has started
-            myHttpJobs.on('start',function() {
-            });
+          for (var i = 0; i<payloadArray.length; i++) {
+              myHttpJobs.add(httpjob,[payloadArray[i]]);
+          }
 
-            // I want to know when the last job has ended
-            myHttpJobs.on('end',function() {
-                clearInterval(statId);
-                //console.log('end');
-                //console.log(JSON.stringify(myHttpJobs.stats()));
-            });
+          // I want to know when the first job has started
+          myHttpJobs.on('start',function() {
+          });
 
-            // I want to know when each job has started
-            myHttpJobs.on('jobStart',function(args) {
-                //console.log('jobStart',args);
-            });
+          // I want to know when the last job has ended
+          myHttpJobs.on('end',function() {
+              clearInterval(statId);
+              //console.log('end');
+              //console.log(JSON.stringify(myHttpJobs.stats()));
+          });
 
-            // I want to know when each job has ended
-            myHttpJobs.on('jobEnd',function(args) {
+          // I want to know when each job has started
+          myHttpJobs.on('jobStart',function(args) {
+              //console.log('jobStart',args);
+          });
 
-                //console.log('jobEnd',args);
+          // I want to know when each job has ended
+          myHttpJobs.on('jobEnd',function(args) {
 
-                // If i'm jobId 10, then make a pause of 5 sec
-                count++;
+              //console.log('jobEnd',args);
 
-                if ((count % 500) === 0) {
-                  console.log("Sleeping..")
-                    myHttpJobs.pause(true);
+              // If i'm jobId 10, then make a pause of 5 sec
+              count++;
 
-                    setTimeout(function() {
-                        myHttpJobs.pause(false);
-                    },1000);
+              if ((count % 500) === 0) {
+                var perCompleted = Math.round(((count / payloadArray.length) * 100));
+                perCompleted = perCompleted.toString();
+                perCompleted += '% completed';
+                if ((count % 1000) === 0){
+                  console.log("[*] "+perCompleted);
                 }
-            });
+                  myHttpJobs.pause(true);
 
-            // I want to know if queue is in pause every sec
-            myHttpJobs.on('pause',function(since) {
-                console.log('in pause since '+since+' milliseconds');
-            });
+                  setTimeout(function() {
+                      myHttpJobs.pause(false);
+                  },1000);
+              }
+          });
+
+          // I want to know if queue is in pause every sec
+          myHttpJobs.on('pause',function(since) {
+
+          });
 
 
-            // JOBS !! leeeeeeeeeet's staaaaaaaart !
-            myHttpJobs.run();
+          // JOBS !! leeeeeeeeeet's staaaaaaaart !
+          myHttpJobs.run();
 
-            var statId = setInterval(function() {
-                //console.log(JSON.stringify(myHttpJobs.stats()));
-            },1000);
+          var statId = setInterval(function() {
+              //console.log(JSON.stringify(myHttpJobs.stats()));
+          },1000);
 
 
 
 
 
         });
-    }
+
 
 
 

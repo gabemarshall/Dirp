@@ -1,5 +1,9 @@
 var request = require('request'),
-    cheerio = require('cheerio')
+    cheerio = require('cheerio'),
+    clc = require('cli-color'),
+    error = clc.red.bold,
+    warn = clc.yellow,
+    notice = clc.blue;
 
 var dirp = request.defaults({pool: {maxSockets: 50},'proxy':''})
 
@@ -30,7 +34,7 @@ function tryAgain(payload, string){
                             console.log("Response string matched for a file that shouldn't exist");
                         }
                     } else {
-                        console.log("%s looks to be valid", payload)
+                        console.log(notice("[+] "+payload+" looks to be valid"))
                     }
                     if (body.match(/Log In/)) {
                         //console.log("Response string matched (Page Not Found or Invalid Session)");
