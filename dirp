@@ -5,10 +5,14 @@ var argv = require('yargs').argv,
     color = require('cli-color'),
     payloads = require('./modules/loadPayloads'),
     async = require('async'),
-    fs = require('fs');
+    fs = require('fs'),
+    rate = 500;
     qjobs = new require('./modules/qjobs');
     dictionaryFile = './default.txt';
 
+if (argv.rate){
+    rate = parseInt(argv.rate);
+}
 if (argv.help || argv.h) {
     console.log(color.green("\n--[Dirp Examples]--\n"));
     //console.log("[1.] Scout a subnet for low hanging fruit on port 8080");
@@ -25,7 +29,6 @@ if (argv.help || argv.h) {
     }
 
       fs.readFile(dictionaryFile, "utf8", function(err, data) {
-        console.log(data.length);
           var payloadArray = data.toString().split('\n');
           console.log("\n[*] Using default wordlist which contains %s checks\n", payloadArray.length)
 
@@ -36,7 +39,7 @@ if (argv.help || argv.h) {
               http.get(argv.u, args[0], next);
           }
 
-          var myHttpJobs = new qjobs({maxConcurrency:500});
+          var myHttpJobs = new qjobs({maxConcurrency:rate});
 
           for (var i = 0; i<payloadArray.length; i++) {
               myHttpJobs.add(httpjob,[payloadArray[i]]);
@@ -66,7 +69,7 @@ if (argv.help || argv.h) {
               // If i'm jobId 10, then make a pause of 5 sec
               count++;
 
-              if ((count % 500) === 0) {
+              if ((count % rate) === 0) {
                 var perCompleted = Math.round(((count / payloadArray.length) * 100));
                 perCompleted = perCompleted.toString();
                 perCompleted += '% completed';
