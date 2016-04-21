@@ -1,7 +1,7 @@
 var request = require('request'),
     cheerio = require('cheerio')
 
-var dirp = request.defaults({pool: {maxSockets: 300},'proxy':''})
+var dirp = request.defaults({pool: {maxSockets: 50},'proxy':''})
 
 var cooks = "";
 
@@ -23,7 +23,7 @@ function tryAgain(payload, string){
                 if (response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 ) {
                     if (payload.match(/fZPfRfWKLfaLkfz/)) {
                         if (!string) {
-                            console.log("A 200 response code is being returned for a file that shouldn't exist");
+                            console.log("A %s response code is being returned for a file that shouldn't exist", response.statusCode);
                             console.log("Use --string to provide a pattern to match for 'Page does not exist'");
                             process.exit();
                         } else {
@@ -59,8 +59,9 @@ function clean(payload) {
 }
 var count = 0
 exports.get = function(url, path, string) {
+
     var payload = clean(url + path);
-    var test = '/(Log In)/'
+    var test = '/('+string+')/'
 
     dirp({ url: payload, followAllRedirects: false, headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36', 'Cookie': cooks } }, function(error, response, body) {
         try {
@@ -68,7 +69,7 @@ exports.get = function(url, path, string) {
                 if (response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 ) {
                     if (payload.match(/fZPfRfWKLfaLkfz/)) {
                         if (!string) {
-                            console.log("A 200 response code is being returned for a file that shouldn't exist");
+                            console.log("A %s response code is being returned for a file that shouldn't exist", response.statusCode);
                             console.log("Use --string to provide a pattern to match for 'Page does not exist'");
                             process.exit();
                         } else {
@@ -77,12 +78,17 @@ exports.get = function(url, path, string) {
                     } else {
                         console.log("%s looks to be valid", payload)
                     }
-                    if (body.match(/Log In/)) {
-                        //console.log("Response string matched (Page Not Found or Invalid Session)");
+                    if (body.match(test)) {
+                        console.log("Response string matched (Page Not Found or Invalid Session)");
                     }
                 }
             } else {
 
+            }
+            if (count === 1){
+                console.log("\n[*] Dirp is checking %s\n", url)
+            } else {
+                
             }
             count++;
         } catch (err) {

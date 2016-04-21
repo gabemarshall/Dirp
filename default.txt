@@ -1,3 +1,4 @@
+fZPfRfWKLfaLkfz
 .bash_history
 .bashrc
 .cache
@@ -3728,6 +3729,7 @@ smileys
 smilies
 sms
 smtp
+snippet
 snippets
 snoop
 snp
