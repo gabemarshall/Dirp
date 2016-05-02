@@ -5,7 +5,7 @@ var request = require('request'),
     warn = clc.yellow,
     notice = clc.cyanBright;
 
-var dirp = request.defaults('proxy':'', 'strictSSL':false})
+var dirp = request.defaults({'proxy':'', 'strictSSL':false})
 
 var cooks = "";
 
