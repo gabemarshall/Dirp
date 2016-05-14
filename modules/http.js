@@ -33,13 +33,16 @@ var count = 0
 exports.get = function(url, path, next, string) {
 
     var payload = clean(url + path);
-    var test = '/('+string+')/'
+
+    var test = new RegExp(string, 'g');
 
     dirp({ url: payload, followAllRedirects: false, headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36', 'Cookie': cooks } }, function(error, response, body) {
         try {
             if (response.statusCode != 404) {
                 if (response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 ) {
-                    if (payload.match(/fZPfRfWKLfaLkfz/)) {
+                    if (body.match(test)) {
+                        //console.log("Response string matched (Page Not Found or Invalid Session)");
+                    } else if (payload.match(/fZPfRfWKLfaLkfz/)) {
                         if (!string) {
                             console.log("A %s response code is being returned for a file that shouldn't exist", response.statusCode);
                             console.log("Use --string to provide a pattern to match for 'Page does not exist'");
@@ -47,11 +50,9 @@ exports.get = function(url, path, next, string) {
                         } else {
                             console.log("Response string matched for a file that shouldn't exist");
                         }
-                    } else {
-                        console.log(notice("[+] "+payload+" looks to be valid"))
                     }
-                    if (body.match(test)) {
-                        console.log("Response string matched (Page Not Found or Invalid Session)");
+                    else {
+                        console.log(notice("[+] "+payload+" looks to be valid"))
                     }
                 }
             } else {

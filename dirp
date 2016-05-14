@@ -8,7 +8,10 @@ var argv = require('yargs').argv,
     fs = require('fs'),
     rate = 500;
     qjobs = new require('./modules/qjobs');
-    dictionaryFile = './default.txt';
+    dictionaryFile = './default.txt',
+    testString = '',
+    jobs = 0,
+    jobsCount = 0;
 
 if (argv.rate){
     rate = parseInt(argv.rate);
@@ -28,6 +31,10 @@ if (argv.help || argv.h) {
       dictionaryFile = argv.input;
     }
 
+    if(argv.string){
+      testString = argv.string;
+    }
+
       fs.readFile(dictionaryFile, "utf8", function(err, data) {
           var payloadArray = data.toString().split('\n');
           console.log("\n[*] Using default wordlist which contains %s checks\n", payloadArray.length)
@@ -36,7 +43,7 @@ if (argv.help || argv.h) {
           var arrays = [];
 
           var httpjob = function(args,next) {
-              http.get(argv.u, args[0], next);
+              http.get(argv.u, args[0], next, testString);
           }
 
           var myHttpJobs = new qjobs({maxConcurrency:rate});
@@ -53,7 +60,6 @@ if (argv.help || argv.h) {
           myHttpJobs.on('end',function() {
               clearInterval(statId);
               //console.log('end');
-              //console.log(JSON.stringify(myHttpJobs.stats()));
           });
 
           // I want to know when each job has started
@@ -64,9 +70,6 @@ if (argv.help || argv.h) {
           // I want to know when each job has ended
           myHttpJobs.on('jobEnd',function(args) {
 
-              //console.log('jobEnd',args);
-
-              // If i'm jobId 10, then make a pause of 5 sec
               count++;
 
               if ((count % rate) === 0) {
@@ -76,25 +79,34 @@ if (argv.help || argv.h) {
                 if ((count % 1000) === 0){
                   console.log("[*] "+perCompleted);
                 }
-                  myHttpJobs.pause(true);
+                  // myHttpJobs.pause(true);
+                  // console.log("foo")
 
-                  setTimeout(function() {
-                      myHttpJobs.pause(false);
-                  },500);
               }
           });
 
           // I want to know if queue is in pause every sec
           myHttpJobs.on('pause',function(since) {
-
+            console.log("Pausing")
           });
 
-
-          // JOBS !! leeeeeeeeeet's staaaaaaaart !
           myHttpJobs.run();
 
           var statId = setInterval(function() {
-              //console.log(JSON.stringify(myHttpJobs.stats()));
+              myStats = JSON.stringify(myHttpJobs.stats());
+              var currentJobCounts = myHttpJobs.stats();
+              currentJobCounts = currentJobCounts._jobsDone
+
+              if (currentJobCounts === jobsCount){
+                jobs++;
+                if(jobs === 2){
+                  process.exit();
+                }
+              } else {
+                jobsCount = currentJobCounts;
+              }
+
+
           },1000);
 
 

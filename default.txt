@@ -179,6 +179,7 @@ HTML
 Health
 Help
 Home
+home
 I
 INSTALL_admin
 Image
