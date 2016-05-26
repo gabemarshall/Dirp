@@ -30,16 +30,30 @@ function clean(payload) {
     return s;
 }
 var count = 0
-exports.get = function(url, path, next, string) {
+exports.get = function(url, path, next, string, debug, insertion) {
 
-    var payload = clean(url + path);
 
-    var test = new RegExp(string, 'g');
+    if (insertion){
+       var payload = insertion;
+    } else {
+        var payload = clean(url + path);
+    }
+
+    if (string){
+        var test = new RegExp(string, 'g');
+    } else {
+        var test = false;
+    }
+
 
     dirp({ url: payload, followAllRedirects: false, headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36', 'Cookie': cooks } }, function(error, response, body) {
         try {
+            if (debug){
+              console.log(payload+" - "+response.statusCode);
+            }
             if (response.statusCode != 404) {
                 if (response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 ) {
+
                     if (body.match(test)) {
                         //console.log("Response string matched (Page Not Found or Invalid Session)");
                     } else if (payload.match(/fZPfRfWKLfaLkfz/)) {

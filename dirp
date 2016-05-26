@@ -6,10 +6,11 @@ var argv = require('yargs').argv,
     payloads = require('./modules/loadPayloads'),
     async = require('async'),
     fs = require('fs'),
-    rate = 500;
+    rate = 100;
     qjobs = new require('./modules/qjobs');
     dictionaryFile = './default.txt',
     testString = '',
+    debug = false,
     jobs = 0,
     jobsCount = 0;
 
@@ -19,6 +20,7 @@ if (argv.rate){
 if (argv.help || argv.h) {
     console.log(color.green("\n--[Dirp Examples]--\n"));
     console.log("./dirp -u 'https://foo.bar/' --input=/path/to/wordlist.txt");
+    console.log("./dirp -u 'https://foo.bar/<INSERT>.jsp'");
     console.log();
 
 } else if (argv.u) {
@@ -35,6 +37,10 @@ if (argv.help || argv.h) {
       testString = argv.string;
     }
 
+    if(argv.debug){
+      debug = true;
+    }
+
       fs.readFile(dictionaryFile, "utf8", function(err, data) {
           var payloadArray = data.toString().split('\n');
           console.log("\n[*] Using default wordlist which contains %s checks\n", payloadArray.length)
@@ -43,7 +49,12 @@ if (argv.help || argv.h) {
           var arrays = [];
 
           var httpjob = function(args,next) {
-              http.get(argv.u, args[0], next, testString);
+            if (argv.u.match(/((<INSERT\s*?.*?>))/gi)){
+              var payload = argv.u.replace(/((<INSERT\s*?.*?>))/gi, args[0]);
+              http.get(argv.u, args[0], next, testString, debug, payload);
+            } else {
+              http.get(argv.u, args[0], next, testString, debug);
+            }
           }
 
           var myHttpJobs = new qjobs({maxConcurrency:rate});
