@@ -6,13 +6,20 @@ var argv = require('yargs').argv,
     payloads = require('./modules/loadPayloads'),
     async = require('async'),
     fs = require('fs'),
-    rate = 100;
+    rate = 15;
     qjobs = new require('./modules/qjobs');
     dictionaryFile = './default.txt',
     testString = '',
     debug = false,
     jobs = 0,
-    jobsCount = 0;
+    jobsCount = 0,
+    wordDir = require.resolve('cli-color');
+
+
+wordDir = wordDir.split("node_modules");
+wordDir = wordDir[0];
+
+var dictionaryFile = wordDir+"default.txt";
 
 if (argv.rate){
     rate = parseInt(argv.rate);
@@ -90,7 +97,6 @@ if (argv.help || argv.h) {
                 if ((count % 1000) === 0){
                   console.log("[*] "+perCompleted);
                 }
-                  // myHttpJobs.pause(true);
                   // console.log("foo")
 
               }

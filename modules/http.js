@@ -52,7 +52,7 @@ exports.get = function(url, path, next, string, debug, insertion) {
               console.log(payload+" - "+response.statusCode);
             }
             if (response.statusCode != 404) {
-                if (response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 ) {
+                if (response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 403) {
 
                     if (body.match(test)) {
                         //console.log("Response string matched (Page Not Found or Invalid Session)");
