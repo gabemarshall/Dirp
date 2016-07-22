@@ -24,10 +24,11 @@ var dictionaryFile = wordDir+"default.txt";
 if (argv.rate){
     rate = parseInt(argv.rate);
 }
-if (argv.help || argv.h) {
+if (argv.help || argv.h || !argv.u) {
     console.log(color.green("\n--[Dirp Examples]--\n"));
     console.log("./dirp -u 'https://foo.bar/' --input=/path/to/wordlist.txt");
     console.log("./dirp -u 'https://foo.bar/<INSERT>.jsp'");
+    console.log("./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'");
     console.log();
 
 } else if (argv.u) {

@@ -4,8 +4,15 @@ var request = require('request'),
     error = clc.red.bold,
     warn = clc.yellow,
     notice = clc.cyanBright;
+    argv = require('yargs').argv
 
-var dirp = request.defaults({'proxy':'', 'strictSSL':false})
+var proxy = '';
+
+if (argv.proxy){
+  proxy = argv.proxy;
+}
+
+var dirp = request.defaults({'proxy':proxy, 'strictSSL':false})
 
 var cooks = "";
 
