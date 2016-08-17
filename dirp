@@ -28,6 +28,7 @@ if (argv.help || argv.h || !argv.u) {
     console.log(color.green("\n--[Dirp Examples]--\n"));
     console.log("./dirp -u 'https://foo.bar/' --input=/path/to/wordlist.txt");
     console.log("./dirp -u 'https://foo.bar/<INSERT>.jsp'");
+    console.log("./dirp -u 'https://foo.bar/' --cookie='sessionid=12345; foo:bar;'");
     console.log("./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'");
     console.log();
 

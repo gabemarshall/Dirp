@@ -1,4 +1,3 @@
-fZPfRfWKLfaLkfz
 .bash_history
 .bashrc
 .cache
@@ -6,8 +5,8 @@ fZPfRfWKLfaLkfz
 .cvs
 .cvsignore
 .forward
-.git/HEAD
 .git
+.git/HEAD
 .history
 .hta
 .htaccess
@@ -157,6 +156,7 @@ DB
 DMSDump
 Database_Administration
 Default
+Documents
 Documents and Settings
 Download
 Downloads
@@ -179,7 +179,6 @@ HTML
 Health
 Help
 Home
-home
 I
 INSTALL_admin
 Image
@@ -228,6 +227,7 @@ People
 Press
 Privacy
 Products
+Program
 Program Files
 Projects
 Publications
@@ -643,6 +643,7 @@ assetmanage
 assetmanagement
 assets
 at
+atlassian
 atom
 attach
 attach_mod
@@ -931,6 +932,7 @@ ccs
 cd
 cdrom
 centres
+cerificate
 cert
 certenroll
 certificate
@@ -1649,6 +1651,7 @@ extras
 ezshopper
 ezsqliteadmin
 f
+fZPfRfWKLfaLkfz
 fa
 fabric
 face
@@ -1801,6 +1804,9 @@ frontpage
 fs
 fsck
 ftp
+fuck
+fuckoff
+fuckyou
 full
 fun
 func
@@ -2822,6 +2828,7 @@ option
 options
 ora
 oracle
+oracle.xml.xsql.XSQLServlet
 oradata
 order
 order-detail
@@ -2841,7 +2848,6 @@ ordertotal
 org
 organisation
 organisations
-organisation
 organizations
 orig
 original
@@ -3078,6 +3084,7 @@ popup_info
 popup_magnifier
 popup_poptions
 popups
+porn
 port
 portal
 portals
@@ -3758,6 +3765,7 @@ sound
 sounds
 source
 sources
+soutbox
 sox
 sp
 space
@@ -4180,6 +4188,8 @@ updateinstaller
 updater
 updates
 updates-topic
+upfile
+upfiles
 upgrade
 upgrade.readme
 upload
@@ -4540,6 +4550,7 @@ yesterday
 yml
 yonetici
 yonetim
+youtube
 yshop
 yt
 yui
@@ -4559,6 +4570,9 @@ zimbra
 zip
 zipfiles
 zips
+zoom
+zope
+zorum
 ~adm
 ~admin
 ~administrator
