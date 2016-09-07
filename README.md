@@ -23,3 +23,8 @@ Enumerate a url, increase the speed by using more concurrent sockets.
 ```
 ./dirp -u 'https://foo.bar/' --rate=1000 (default is 500)
 ```
+
+Point dirp at a proxy (burp, corporate proxy, etc)
+```
+./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'
+```
