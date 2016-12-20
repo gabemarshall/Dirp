@@ -16,7 +16,7 @@ Enumerate a url using a custom wordlist.
 Enumerate an application post auth (uses same syntax as SQLMap)
 
 ```
-./dirp -u 'https://foo.bar/' --cookie='sessionid=12345; foo:bar;'
+./dirp -u 'https://foo.bar/' --cookie='sessionid=12345;foo=bar;'
 ```
 
 Enumerate a url, increase the speed by using more concurrent sockets.
