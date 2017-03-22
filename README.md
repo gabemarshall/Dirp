@@ -1,3 +1,5 @@
+# No longer supported, check out a much better & less buggy replacement called [GoBuster](https://github.com/OJ/gobuster)
+
 # Dirp
 A simplistic but fast Web Content Scanner written in nodejs.
 
