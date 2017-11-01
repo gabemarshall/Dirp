@@ -12,7 +12,13 @@ if (argv.proxy){
   proxy = argv.proxy;
 }
 
-var dirp = request.defaults({'proxy':proxy, 'strictSSL':false})
+var method = 'GET'; // Default method to use
+
+if (argv.method){
+    method = argv.method.toUpperCase();    
+}
+
+var dirp = request.defaults({'proxy':proxy, 'strictSSL':false, 'method':method})
 
 var cooks = "";
 
@@ -58,7 +64,7 @@ exports.get = function(url, path, next, string, debug, insertion) {
             if (debug){
               console.log(payload+" - "+response.statusCode);
             }
-            if (response.statusCode != 404) {
+            if (response.statusCode != 404 && !argv.status) {
                 if (response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 403) {
 
                     if (body.match(test)) {
@@ -67,7 +73,9 @@ exports.get = function(url, path, next, string, debug, insertion) {
                         if (!string) {
                             console.log("A %s response code is being returned for a file that shouldn't exist", response.statusCode);
                             console.log("Use --string to provide a pattern to match for 'Page does not exist'");
-                            process.exit();
+                            if (!argv.status){
+                                process.exit();
+                            }
                         } else {
                             console.log("Response string matched for a file that shouldn't exist");
                         }
@@ -77,7 +85,9 @@ exports.get = function(url, path, next, string, debug, insertion) {
                     }
                 }
             } else {
-
+                if (argv.status === response.statusCode){
+                    console.log(notice("[+] "+payload+" looks to be valid"))
+                }
             }
             if (count === 1){
                 console.log("\n[*] Dirp is checking %s\n", url)

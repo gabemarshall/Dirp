@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// TODO, replace qjobs with https://github.com/harish2704/node-job-manager 
 
 var argv = require('yargs').argv,
     http = require('./modules/http'),
@@ -6,13 +7,14 @@ var argv = require('yargs').argv,
     payloads = require('./modules/loadPayloads'),
     async = require('async'),
     fs = require('fs'),
-    rate = 15;
+    rate = 50;
     qjobs = new require('./modules/qjobs');
     dictionaryFile = './default.txt',
     testString = '',
     debug = false,
     jobs = 0,
     jobsCount = 0,
+    test = false,
     wordDir = require.resolve('cli-color');
 
 
@@ -28,8 +30,9 @@ if (argv.help || argv.h || !argv.u) {
     console.log(color.green("\n--[Dirp Examples]--\n"));
     console.log("./dirp -u 'https://foo.bar/' --input=/path/to/wordlist.txt");
     console.log("./dirp -u 'https://foo.bar/<INSERT>.jsp'");
-    console.log("./dirp -u 'https://foo.bar/' --cookie='sessionid=12345; foo:bar;'");
+    console.log("./dirp -u 'https://foo.bar/' --cookie='sessionid=12345;foo=bar;'");
     console.log("./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'");
+    console.log("           '--rate=100 (50 default)");
     console.log();
 
 } else if (argv.u) {
@@ -38,8 +41,13 @@ if (argv.help || argv.h || !argv.u) {
         http.cookies(argv.cookie);
     }
 
-    if (argv.input) {
-      dictionaryFile = argv.input;
+    if (argv.input || argv.wordlist) {
+      if (argv.input){
+        dictionaryFile = argv.input;  
+      } else {
+        dictionaryFile = argv.wordlist;
+      }
+      
     }
 
     if(argv.string){
@@ -119,8 +127,13 @@ if (argv.help || argv.h || !argv.u) {
               if (currentJobCounts === jobsCount){
                 jobs++;
                 if(jobs === 2){
+                  //process.exit();
+                  test = true;
+                }
+                if (jobs === 10 && test){
                   process.exit();
                 }
+                
               } else {
                 jobsCount = currentJobCounts;
               }

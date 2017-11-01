@@ -27,6 +27,7 @@
 .web
 0
 00
+thank_you
 01
 02
 03
@@ -4600,3 +4601,8 @@ zorum
 ~user
 ~webmaster
 ~www
+uddiexplorer/SearchPublicRegistries.jsp
+ibi_apps
+ibi_apps/WFServlet
+invoker
+msgs
