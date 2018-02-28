@@ -1,153 +1,119 @@
 #!/usr/bin/env node
-// TODO, replace qjobs with https://github.com/harish2704/node-job-manager 
 
-var argv = require('yargs').argv,
-    http = require('./modules/http'),
-    color = require('cli-color'),
-    payloads = require('./modules/loadPayloads'),
-    async = require('async'),
-    fs = require('fs'),
-    rate = 50;
-    qjobs = new require('./modules/qjobs');
-    dictionaryFile = './default.txt',
-    testString = '',
-    debug = false,
-    jobs = 0,
-    jobsCount = 0,
-    test = false,
-    wordDir = require.resolve('cli-color');
+var argv = require("yargs").argv,
+  http = require("./modules/http"),
+  color = require("cli-color"),
+  payloads = require("./modules/loadPayloads"),
+  async = require("async"),
+  fs = require("fs"),
+  throttledQueue = require("throttled-queue"),
+  rate = 100;
 
+(dictionaryFile = "./default.txt"),
+  (testString = ""),
+  (debug = false),
+  (jobs = 0),
+  (jobsCount = 0),
+  (test = false),
+  (count = 0),
+  (wordDir = require.resolve("cli-color"));
 
 wordDir = wordDir.split("node_modules");
 wordDir = wordDir[0];
 
-var dictionaryFile = wordDir+"default.txt";
+var dictionaryFile = wordDir + "default.txt";
 
-if (argv.rate){
-    rate = parseInt(argv.rate);
+if (argv.rate) {
+  rate = parseInt(argv.rate);
 }
+
+var throttle = throttledQueue(rate, 1000, true);
+
 if (argv.help || argv.h || !argv.u) {
-    console.log(color.green("\n--[Dirp Examples]--\n"));
-    console.log("./dirp -u 'https://foo.bar/' --input=/path/to/wordlist.txt");
-    console.log("./dirp -u 'https://foo.bar/<INSERT>.jsp'");
-    console.log("./dirp -u 'https://foo.bar/' --cookie='sessionid=12345;foo=bar;'");
-    console.log("./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'");
-    console.log("           '--rate=100 (50 default)");
-    console.log();
-
+  console.log(color.green("\n--[Dirp Examples]--\n"));
+  console.log("./dirp -u 'https://foo.bar/' --input=/path/to/wordlist.txt");
+  console.log("./dirp -u 'https://foo.bar/<INSERT>.jsp'");
+  console.log(
+    "./dirp -u 'https://foo.bar/' --cookie='sessionid=12345;foo=bar;'"
+  );
+  console.log("./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'");
+  console.log("           '--rate=100 (max number of requests per second)");
+  console.log();
 } else if (argv.u) {
+  if (argv.cookie) {
+    http.cookies(argv.cookie);
+  }
 
-    if (argv.cookie) {
-        http.cookies(argv.cookie);
+  if (argv.input || argv.wordlist) {
+    if (argv.input) {
+      dictionaryFile = argv.input;
+    } else {
+      dictionaryFile = argv.wordlist;
     }
+  }
 
-    if (argv.input || argv.wordlist) {
-      if (argv.input){
-        dictionaryFile = argv.input;  
+  if (argv.string) {
+    testString = argv.string;
+  }
+
+  if (argv.debug) {
+    debug = true;
+  }
+
+  fs.readFile(dictionaryFile, "utf8", function(err, data) {
+    
+    var payloadArray = data.toString().split("\n");
+    
+    const jobCount = payloadArray.length
+    if (jobCount <= rate){
+      console.log("woops")
+      process.exit(0)
+      rate = jobCount;
+    }
+    console.log(
+      "\n[*] Using default wordlist which contains %s checks\n",
+      payloadArray.length
+    );
+
+    var arrays = [];
+
+    var httpjob = function(args) {
+      if (argv.u.match(/((<INSERT\s*?.*?>))/gi)) {
+        var payload = argv.u.replace(/((<INSERT\s*?.*?>))/gi, args[0]);
+        http.get(argv.u, args, testString, debug, payload);
       } else {
-        dictionaryFile = argv.wordlist;
+        http.get(argv.u, args, testString, debug);
       }
+    };
+    
+    for (var i = 0; i < payloadArray.length; i++) {
+      throttle(function() {
+        pay = payloadArray.splice(0, 1)
+        httpjob(pay[0])
+      });
+    }
+    setInterval(function(){
       
-    }
+      count = jobCount - payloadArray.length;
+      
+      if ((count % rate) === 0) {
+        var perCompleted = Math.round(((count / jobCount) * 100));
+        perCompleted = perCompleted.toString();
+        perCompleted += '% completed';
+        if ((count % 1000) === 0){
+          console.log("[*] "+perCompleted);
+        }
+          // console.log("foo")
 
-    if(argv.string){
-      testString = argv.string;
-    }
-
-    if(argv.debug){
-      debug = true;
-    }
-
-      fs.readFile(dictionaryFile, "utf8", function(err, data) {
-          var payloadArray = data.toString().split('\n');
-          console.log("\n[*] Using default wordlist which contains %s checks\n", payloadArray.length)
-
-          var count = 1;
-          var arrays = [];
-
-          var httpjob = function(args,next) {
-            if (argv.u.match(/((<INSERT\s*?.*?>))/gi)){
-              var payload = argv.u.replace(/((<INSERT\s*?.*?>))/gi, args[0]);
-              http.get(argv.u, args[0], next, testString, debug, payload);
-            } else {
-              http.get(argv.u, args[0], next, testString, debug);
-            }
-          }
-
-          var myHttpJobs = new qjobs({maxConcurrency:rate});
-
-          for (var i = 0; i<payloadArray.length; i++) {
-              myHttpJobs.add(httpjob,[payloadArray[i]]);
-          }
-
-          // I want to know when the first job has started
-          myHttpJobs.on('start',function() {
-          });
-
-          // I want to know when the last job has ended
-          myHttpJobs.on('end',function() {
-              clearInterval(statId);
-              //console.log('end');
-          });
-
-          // I want to know when each job has started
-          myHttpJobs.on('jobStart',function(args) {
-              //console.log('jobStart',args);
-          });
-
-          // I want to know when each job has ended
-          myHttpJobs.on('jobEnd',function(args) {
-
-              count++;
-
-              if ((count % rate) === 0) {
-                var perCompleted = Math.round(((count / payloadArray.length) * 100));
-                perCompleted = perCompleted.toString();
-                perCompleted += '% completed';
-                if ((count % 1000) === 0){
-                  console.log("[*] "+perCompleted);
-                }
-                  // console.log("foo")
-
-              }
-          });
-
-          // I want to know if queue is in pause every sec
-          myHttpJobs.on('pause',function(since) {
-            console.log("Pausing")
-          });
-
-          myHttpJobs.run();
-
-          var statId = setInterval(function() {
-              myStats = JSON.stringify(myHttpJobs.stats());
-              var currentJobCounts = myHttpJobs.stats();
-              currentJobCounts = currentJobCounts._jobsDone
-
-              if (currentJobCounts === jobsCount){
-                jobs++;
-                if(jobs === 2){
-                  //process.exit();
-                  test = true;
-                }
-                if (jobs === 10 && test){
-                  process.exit();
-                }
-                
-              } else {
-                jobsCount = currentJobCounts;
-              }
-
-
-          },1000);
-
-
-
-
-
-        });
-
-
-
-
+      }
+      if (payloadArray.length === 0){
+        setTimeout(function(){
+          process.exit(0)
+        })
+      }
+    }, 1000)
+  });
 }
+process.on('exit', function() {
+  console.log("%s checks completed", count);
+});

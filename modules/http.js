@@ -1,7 +1,7 @@
 var request = require('request'),
     cheerio = require('cheerio'),
     clc = require('cli-color'),
-    error = clc.red.bold,
+    doh = clc.red.bold,
     warn = clc.yellow,
     notice = clc.cyanBright;
     argv = require('yargs').argv
@@ -42,8 +42,8 @@ function clean(payload) {
     });
     return s;
 }
-var count = 0
-exports.get = function(url, path, next, string, debug, insertion) {
+
+exports.get = function(url, path, string, debug, insertion) {
 
 
     if (insertion){
@@ -57,13 +57,13 @@ exports.get = function(url, path, next, string, debug, insertion) {
     } else {
         var test = false;
     }
-
-
+    
     dirp({ url: payload, followAllRedirects: false, headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36', 'Cookie': cooks } }, function(error, response, body) {
         try {
             if (debug){
               console.log(payload+" - "+response.statusCode);
             }
+            
             if (response.statusCode != 404 && !argv.status) {
                 if (response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 403) {
 
@@ -89,18 +89,11 @@ exports.get = function(url, path, next, string, debug, insertion) {
                     console.log(notice("[+] "+payload+" looks to be valid"))
                 }
             }
-            if (count === 1){
-                console.log("\n[*] Dirp is checking %s\n", url)
-            } else {
-
-            }
-            count++;
-            next();
+            
         } catch (err) {
+            console.log(doh("Error connecting to the host.. stopping!\n"))
+            process.exit(1)
         }
 
     });
 }
-process.on('exit', function() {
-    console.log("%s checks completed", count);
-});

@@ -1,6 +1,6 @@
 {
   "name": "Dirp",
-  "version": "0.0.1a",
+  "version": "0.1.0",
   "description": "A simplistic but fast Web Content Scanner written in nodejs.",
   "main": "dirp.js",
   "repository": {
@@ -11,20 +11,20 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "async": "1.0.0",
     "body-parser": "*",
+    "cheerio": "*",
     "cli-color": "*",
     "ecstatic": "*",
-    "method-override": "*",
-    "request": "*",
-    "yargs": "*",
-    "async": "1.0.0",
+    "events": "*",
     "findup-sync": "0.2.1",
+    "method-override": "*",
     "optimist": "0.5.0",
     "printf": "0.2.3",
-    "qjobs": "1.1.4",
+    "request": "*",
+    "throttled-queue": "^1.0.5",
     "winston": "2.2.0",
-    "cheerio": "*",
-    "events": "*"
+    "yargs": "*"
   },
   "author": "Gabe Marshall",
   "license": "ISC"
