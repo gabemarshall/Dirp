@@ -39,6 +39,7 @@ if (argv.help || argv.h || !argv.u) {
   console.log("./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'");
   console.log("           '--rate=100 (max number of requests per second)");
   console.log();
+  process.exit(1);
 } else if (argv.u) {
   if (argv.cookie) {
     http.cookies(argv.cookie);
