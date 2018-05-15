@@ -8,9 +8,9 @@ Enumerate a url using the built-in wordlist.
 ./dirp.js -u 'https://foo.bar/'
 ```
 
-Enumerate a url using a custom wordlist.
+Enumerate a url using a custom wordlist and a custom insertion point
 ```
-./dirp -u 'https://foo.bar/' --wordlist=/path/to/wordlist.txt
+./dirp -u 'https://foo.bar/<INSERT>.php' --wordlist=/path/to/phpwordlist.txt
 ```
 
 Enumerate an application post auth (uses same syntax as SQLMap)

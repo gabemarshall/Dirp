@@ -80,7 +80,7 @@ if (argv.help || argv.h || !argv.u) {
 
     var httpjob = function(args) {
       if (argv.u.match(/((<INSERT\s*?.*?>))/gi)) {
-        var payload = argv.u.replace(/((<INSERT\s*?.*?>))/gi, args[0]);
+        var payload = argv.u.replace(/((<INSERT\s*?.*?>))/gi, args);
         http.get(argv.u, args, testString, debug, payload);
       } else {
         http.get(argv.u, args, testString, debug);
