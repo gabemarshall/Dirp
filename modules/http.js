@@ -7,6 +7,7 @@ var request = require('request'),
     argv = require('yargs').argv
 
 var proxy = '';
+var errors = 0;
 
 if (argv.proxy){
   proxy = argv.proxy;
@@ -98,8 +99,15 @@ exports.get = function(url, path, string, debug, insertion) {
             }
             
         } catch (err) {
-            console.log(doh("Error connecting to the host.. stopping!\n"))
-            process.exit(1)
+            errors++;
+            
+            if (!argv.force && errors > 5){
+                console.log(doh("\x1B[1A\x1B[K Too many errors, quitting"))
+                process.exit(1)    
+            } else {
+                console.log(doh("\x1B[1A\x1B[K Error #"+errors+" - failed to connect to host (ctrl + c to quit)"))    
+            }
+            
         }
 
     });

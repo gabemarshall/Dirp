@@ -50,3 +50,9 @@ Use a custom regex string to indicate a file exists
 ```
 --string=foobar
 ```
+
+Force Dirp to continue despite errors in connecting
+
+```
+--force
+```
