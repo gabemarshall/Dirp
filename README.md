@@ -10,7 +10,7 @@ Enumerate a url using the built-in wordlist.
 
 Enumerate a url using a custom wordlist.
 ```
-./dirp -u 'https://foo.bar/' --input=/path/to/wordlist.txt
+./dirp -u 'https://foo.bar/' --wordlist=/path/to/wordlist.txt
 ```
 
 Enumerate an application post auth (uses same syntax as SQLMap)
@@ -21,7 +21,7 @@ Enumerate an application post auth (uses same syntax as SQLMap)
 
 Enumerate a url, increase the max requests per second
 ```
-./dirp -u 'https://foo.bar/' --rate=500 (default is 100)
+./dirp -u 'https://foo.bar/' --rate=50 (default is 15)
 ```
 
 Point dirp at a proxy (burp, corporate proxy, etc)
@@ -49,10 +49,4 @@ Use a custom regex string to indicate a file exists
 
 ```
 --string=foobar
-```
-
-Enable debug mode
-
-```
---debug
 ```
