@@ -7,7 +7,7 @@ var argv = require("yargs").argv,
   async = require("async"),
   fs = require("fs"),
   throttledQueue = require("throttled-queue"),
-  rate = 100;
+  rate = 15;
 
 (dictionaryFile = "./default.txt"),
   (testString = ""),
@@ -31,13 +31,13 @@ var throttle = throttledQueue(rate, 1000, true);
 
 if (argv.help || argv.h || !argv.u) {
   console.log(color.green("\n--[Dirp Examples]--\n"));
-  console.log("./dirp -u 'https://foo.bar/' --input=/path/to/wordlist.txt");
+  console.log("./dirp -u 'https://foo.bar/' --wordlist=/path/to/wordlist.txt");
   console.log("./dirp -u 'https://foo.bar/<INSERT>.jsp'");
   console.log(
     "./dirp -u 'https://foo.bar/' --cookie='sessionid=12345;foo=bar;'"
   );
   console.log("./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'");
-  console.log("           '--rate=100 (max number of requests per second)");
+  console.log("           '--rate=50 (max number of requests per second - default 15)");
   console.log();
   process.exit(1);
 } else if (argv.u) {
@@ -72,7 +72,7 @@ if (argv.help || argv.h || !argv.u) {
       rate = jobCount;
     }
     console.log(
-      "\n[*] Using default wordlist which contains %s checks\n",
+      "\n[*] Using wordlist which contains %s checks\n\n",
       payloadArray.length
     );
 
@@ -104,17 +104,16 @@ if (argv.help || argv.h || !argv.u) {
         if ((count % 1000) === 0){
           console.log("[*] "+perCompleted);
         }
-          // console.log("foo")
-
       }
       if (payloadArray.length === 0){
         setTimeout(function(){
           process.exit(0)
-        })
+        }, 1500)
       }
     }, 1000)
   });
 }
 process.on('exit', function() {
-  console.log("%s checks completed", count);
+  console.log("\n\n%s checks completed", count);
+  console.log(http.discoveries.length+" matches found\n");
 });

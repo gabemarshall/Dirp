@@ -21,7 +21,7 @@ if (argv.method){
 var dirp = request.defaults({'proxy':proxy, 'strictSSL':false, 'method':method})
 
 var cooks = "";
-
+exports.discoveries = []
 exports.cookies = function(cookies) {
     cookies = cookies.split(';');
     for (i = 0; i < cookies.length; i++) {
@@ -62,6 +62,9 @@ exports.get = function(url, path, string, debug, insertion) {
         try {
             if (debug){
               console.log(payload+" - "+response.statusCode);
+              
+            } else {
+                    //
             }
             
             if (response.statusCode != 404 && !argv.status) {
@@ -81,12 +84,16 @@ exports.get = function(url, path, string, debug, insertion) {
                         }
                     }
                     else {
-                        console.log(notice("[+] "+payload+" looks to be valid"))
+                        process.stdout.write(notice("\n[+] "+payload+" looked to be valid"))
+                        exports.discoveries.push(payload)
                     }
                 }
             } else {
                 if (argv.status === response.statusCode){
-                    console.log(notice("[+] "+payload+" looks to be valid"))
+                    process.stdout.write(notice("\n[+] "+payload+" looked to be valid"))
+                    exports.discoveries.push(payload)
+                } else {
+                    console.log('\x1B[1A\x1B[K' +response.statusCode+' => '+payload);
                 }
             }
             
