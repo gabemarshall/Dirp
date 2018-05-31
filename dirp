@@ -116,4 +116,7 @@ if (argv.help || argv.h || !argv.u) {
 process.on('exit', function() {
   console.log("\n\n%s checks completed", count);
   console.log(http.discoveries.length+" matches found\n");
+  for (i=0;i<http.discoveries.length;i++){
+    console.log(http.discoveries[i].url + " - [ "+http.discoveries[i].status+" ]")
+  }
 });

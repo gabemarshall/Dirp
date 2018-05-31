@@ -1,6 +1,7 @@
 var request = require('request'),
     cheerio = require('cheerio'),
     clc = require('cli-color'),
+    fs = require('fs'),
     doh = clc.red.bold,
     warn = clc.yellow,
     notice = clc.cyanBright;
@@ -85,18 +86,24 @@ exports.get = function(url, path, string, debug, insertion) {
                         }
                     }
                     else {
-                        process.stdout.write(notice("\n[+] "+payload+" looked to be valid"))
-                        exports.discoveries.push(payload)
+
+                        //process.stdout.write(notice("\n[+] "+payload+" looked to be valid"))
+                        
+                        exports.discoveries.push({ url: payload, status: response.statusCode})
                     }
                 }
             } else {
                 if (argv.status === response.statusCode){
-                    process.stdout.write(notice("\n[+] "+payload+" looked to be valid"))
-                    exports.discoveries.push(payload)
+                    //process.stdout.write(notice("\n[+] "+payload+" looked to be valid"))
+                    exports.discoveries.push({ url: payload, status: response.statusCode})
                 } else {
                     console.log('\x1B[1A\x1B[K' +response.statusCode+' => '+payload);
                 }
             }
+            
+            fs.appendFile('dirp.log', '\n==============================\n'+response.body, 'utf-8', function(){
+
+            });
             
         } catch (err) {
             errors++;
