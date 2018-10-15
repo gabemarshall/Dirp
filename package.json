@@ -15,6 +15,7 @@
     "body-parser": "*",
     "cheerio": "*",
     "cli-color": "*",
+    "cli-table": "^0.3.1",
     "ecstatic": "*",
     "events": "*",
     "findup-sync": "0.2.1",

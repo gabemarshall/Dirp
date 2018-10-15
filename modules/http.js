@@ -61,16 +61,28 @@ exports.get = function(url, path, string, debug, insertion) {
     }
     
     dirp({ url: payload, followAllRedirects: false, headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36', 'Cookie': cooks } }, function(error, response, body) {
+
         try {
             if (debug){
-              console.log(payload+" - "+response.statusCode);
-              
+              console.log(payload+" - "+response.statusCode+" - "+response.body.length);
             } else {
                     //
             }
+                let firstMatch = 'None';
+                let matches = 0;
+                try {
+                    var re = new RegExp("(.{1,8}"+path+".{1,8})"); 
+                    let matchy = response.body.match(re);
+                    let firstMatch = matchy[0];
+                    let matches = matchy.length
+                } catch(err){
+                    
+                }
+                
+            //}
             
             if (response.statusCode != 404 && !argv.status) {
-                if (response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 403) {
+                if (response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 403 || response.statusCode === 401 || response.statusCode === 500) {
 
                     if (body.match(test)) {
                         //console.log("Response string matched (Page Not Found or Invalid Session)");
@@ -89,13 +101,18 @@ exports.get = function(url, path, string, debug, insertion) {
 
                         //process.stdout.write(notice("\n[+] "+payload+" looked to be valid"))
                         
-                        exports.discoveries.push({ url: payload, status: response.statusCode})
+                        exports.discoveries.push({ url: payload, status: response.statusCode, len: response.body.length, match: firstMatch, matchLen: matches})
                     }
                 }
-            } else {
+            } else if (argv.fuzz){
+
+                
+                exports.discoveries.push({ url: payload, status: response.statusCode, len: response.body.length, match: firstMatch, matchLen: matches})
+            }
+            else {
                 if (argv.status === response.statusCode){
                     //process.stdout.write(notice("\n[+] "+payload+" looked to be valid"))
-                    exports.discoveries.push({ url: payload, status: response.statusCode})
+                    exports.discoveries.push({ url: payload, status: response.statusCode, len: response.body.length, match: firstMatch, matchLen: matches})
                 } else {
                     console.log('\x1B[1A\x1B[K' +response.statusCode+' => '+payload);
                 }
@@ -106,6 +123,7 @@ exports.get = function(url, path, string, debug, insertion) {
             });
             
         } catch (err) {
+            console.log(err)
             errors++;
             
             if (!argv.force && errors > 5){

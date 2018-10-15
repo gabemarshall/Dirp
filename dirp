@@ -7,7 +7,9 @@ var argv = require("yargs").argv,
   async = require("async"),
   fs = require("fs"),
   throttledQueue = require("throttled-queue"),
-  rate = 15;
+  Table = require('cli-table'),
+  table = new Table(),
+  rate = 50;
 
 (dictionaryFile = "./default.txt"),
   (testString = ""),
@@ -116,7 +118,20 @@ if (argv.help || argv.h || !argv.u) {
 process.on('exit', function() {
   console.log("\n\n%s checks completed", count);
   console.log(http.discoveries.length+" matches found\n");
+  var resultsTable = new Table({
+    head: ['Payload', 'Status', 'Length', 'Match'],
+    style : {compact : true, 'padding-left' : 1}
+  });
   for (i=0;i<http.discoveries.length;i++){
-    console.log(http.discoveries[i].url + " - [ "+http.discoveries[i].status+" ]")
+    resultsTable.push(
+        [http.discoveries[i].url, http.discoveries[i].status, http.discoveries[i].len, http.discoveries[i].match]
+      );
+    //console.log(http.discoveries[i].url + " - [ "+http.discoveries[i].status+" ]")
   }
+// table.push(
+//     { 'Some key': 'Some value' }
+//   , { 'Another key': 'Another value' }
+// );
+
+console.log(resultsTable.toString());  
 });
