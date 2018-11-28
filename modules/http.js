@@ -64,7 +64,7 @@ exports.get = function(url, path, string, debug, insertion) {
 
         try {
             if (debug){
-              console.log(payload+" - "+response.statusCode+" - "+response.body.length);
+              console.log(method+" - "+payload+" - "+response.statusCode+" - "+response.body.length);
             } else {
                     //
             }
@@ -107,7 +107,7 @@ exports.get = function(url, path, string, debug, insertion) {
             } else if (argv.fuzz){
 
                 
-                exports.discoveries.push({ url: payload, status: response.statusCode, len: response.body.length, match: firstMatch, matchLen: matches})
+                exports.discoveries.push({ url: method+" - "+payload, status: response.statusCode, len: response.body.length, match: firstMatch, matchLen: matches})
             }
             else {
                 if (argv.status === response.statusCode){

@@ -27,7 +27,6 @@
 .web
 0
 00
-thank_you
 01
 02
 03
@@ -38,6 +37,7 @@ thank_you
 08
 09
 1
+1.0
 10
 100
 1000
@@ -51,6 +51,7 @@ thank_you
 13
 14
 15
+adfs/ls/IdpInitiatedSignOn.aspx
 1990
 1991
 1992
@@ -63,6 +64,7 @@ thank_you
 1999
 1x1
 2
+2.0
 20
 200
 2000
@@ -89,27 +91,34 @@ thank_you
 25
 2g
 3
+3.0
 30
 300
 32
 3g
 3rdparty
 4
+4.0
 400
 401
 403
 404
 42
 5
+5.0
 50
 500
 51
 6
+6.0
 64
 7
+7.0
 7z
 8
+8.0
 9
+9.0
 96
 @
 A
@@ -246,7 +255,9 @@ Root
 S
 SERVER-INF
 SOAPMonitor
+SPUser
 SQL
+SSoAuthLoginResponse
 SUNWmc
 Scripts
 Search
@@ -264,8 +275,12 @@ Software
 Sources
 Sports
 Spy
+SsoFederation
+SsoIdentityProvider
 Statistics
 Stats
+StorageAuthToken
+StorePoint
 Super-Admin
 Support
 SysAdmin
@@ -665,6 +680,7 @@ authoring
 authorization
 authorized_keys
 authors
+authtoken
 authuser
 authusers
 auto
@@ -1303,6 +1319,7 @@ dcforum
 dclk
 de
 de_DE
+deactivate
 deal
 dealer
 dealers
@@ -1394,6 +1411,7 @@ directories
 directorio
 directory
 dirs
+disable
 disabled
 disallow
 disclaimer
@@ -1546,6 +1564,7 @@ emulator
 en
 en_US
 en_us
+enable
 enable-cookies
 enc
 encode
@@ -1818,6 +1837,7 @@ functionlude
 functions
 fund
 funding
+fundingsources
 funds
 furl
 fusion
@@ -2040,6 +2060,8 @@ humor
 hyper
 i
 ia
+ibi_apps
+ibi_apps/WFServlet
 ibm
 icat
 ico
@@ -2182,6 +2204,7 @@ invitation
 invite
 invoice
 invoices
+invoker
 ioncube
 ip
 ipc
@@ -2656,6 +2679,7 @@ msadc
 msadm
 msft
 msg
+msgs
 msie
 msn
 msoffice
@@ -3427,6 +3451,7 @@ reseller
 resellers
 reservation
 reservations
+reset
 resin
 resin-admin
 resize
@@ -3447,6 +3472,8 @@ results
 resume
 resumes
 retail
+retrieve
+return
 returns
 reusablecontent
 reverse
@@ -3680,6 +3707,7 @@ shtml
 si
 sid
 sign
+sign-in
 sign-up
 sign_up
 signature
@@ -3914,6 +3942,7 @@ supplier
 support
 support_login
 supported
+supporttickets
 surf
 survey
 surveys
@@ -3966,6 +3995,7 @@ tar
 tar.bz2
 tar.gz
 target
+targets
 tartarus
 task
 tasks
@@ -4025,6 +4055,7 @@ tgp
 tgz
 th
 thank-you
+thank_you
 thanks
 thankyou
 the
@@ -4070,6 +4101,8 @@ today
 todel
 todo
 toggle
+token
+tokens
 tomcat
 tomcat-docs
 tool
@@ -4163,6 +4196,7 @@ uc_server
 ucenter
 ucp
 uddi
+uddiexplorer/SearchPublicRegistries.jsp
 uds
 ui
 uk
@@ -4223,6 +4257,7 @@ userdir
 userfiles
 userimages
 userinfo
+userip
 userlist
 userlog
 userlogin
@@ -4243,11 +4278,19 @@ utility
 utility_login
 utils
 v
+v0
 v1
+v10
 v2
 v3
 v4
+v5
+v6
+v7
+v8
+v9
 vadmind
+validate
 validation
 validatior
 vap
@@ -4274,6 +4317,7 @@ vendors
 ver
 ver1
 ver2
+verify
 version
 verwaltung
 vfs
@@ -4321,6 +4365,7 @@ vpn
 vs
 vsadmin
 vuln
+vulnerabilities
 vvc_display
 w
 w3
@@ -4537,10 +4582,10 @@ xmlimporter
 xmlrpc
 xmlrpc.php
 xn
+xqa
 xsl
 xslt
 xsql
-xqa
 xx
 xxx
 xyz
@@ -4601,8 +4646,3 @@ zorum
 ~user
 ~webmaster
 ~www
-uddiexplorer/SearchPublicRegistries.jsp
-ibi_apps
-ibi_apps/WFServlet
-invoker
-msgs

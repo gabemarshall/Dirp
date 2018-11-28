@@ -69,7 +69,7 @@ if (argv.help || argv.h || !argv.u) {
     
     const jobCount = payloadArray.length
     if (jobCount <= rate){
-      console.log("woops")
+      console.log("Try lowering the --rate option")
       process.exit(0)
       rate = jobCount;
     }
@@ -82,7 +82,11 @@ if (argv.help || argv.h || !argv.u) {
 
     var httpjob = function(args) {
       if (argv.u.match(/((<INSERT\s*?.*?>))/gi)) {
+        if (argv.trim){
+          args = args.replace(/(\..+)/gi, "")
+        }
         var payload = argv.u.replace(/((<INSERT\s*?.*?>))/gi, args);
+        
         http.get(argv.u, args, testString, debug, payload);
       } else {
         http.get(argv.u, args, testString, debug);
