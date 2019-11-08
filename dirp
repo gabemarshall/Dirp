@@ -1,18 +1,29 @@
 #!/usr/bin/env node
 
+const Promise = require("bluebird");
+const Sugar = require("sugar");
+
+Sugar.extend();
+const modifyExtPaths = require('./modules/modifyExtPaths');
+const lowercase = require('./modules/lowercase');
+const log = console.log;
 var argv = require("yargs").argv,
-  http = require("./modules/http"),
+  httpz = require("./modules/httpz"),
+  genCustomBackupFiles = require('./modules/customBackupFiles'),
+  pathsToCheck = [],
   color = require("cli-color"),
-  payloads = require("./modules/loadPayloads"),
   async = require("async"),
   fs = require("fs"),
   throttledQueue = require("throttled-queue"),
   Table = require('cli-table'),
   table = new Table(),
-  rate = 50;
+  totalChecks = 0,
+  checkCounter = 0,
+  rate = 15,
+  lastPercent = 0,
+  testResults = [];
 
-(dictionaryFile = "./default.txt"),
-  (testString = ""),
+(testString = ""),
   (debug = false),
   (jobs = 0),
   (jobsCount = 0),
@@ -23,119 +34,181 @@ var argv = require("yargs").argv,
 wordDir = wordDir.split("node_modules");
 wordDir = wordDir[0];
 
-var dictionaryFile = wordDir + "default.txt";
+var dictionaryFile = wordDir + "wordlists/default.txt";
+if (argv.input || argv.wordlist) {
+  if (argv.input) {
+    dictionaryFile = argv.input;
+  } else {
+    dictionaryFile = argv.wordlist;
+  }
+}
 
 if (argv.rate) {
   rate = parseInt(argv.rate);
 }
 
-var throttle = throttledQueue(rate, 1000, true);
 
-if (argv.help || argv.h || !argv.u) {
-  console.log(color.green("\n--[Dirp Examples]--\n"));
-  console.log("./dirp -u 'https://foo.bar/' --wordlist=/path/to/wordlist.txt");
-  console.log("./dirp -u 'https://foo.bar/<INSERT>.jsp'");
-  console.log(
-    "./dirp -u 'https://foo.bar/' --cookie='sessionid=12345;foo=bar;'"
-  );
-  console.log("./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'");
-  console.log("           '--rate=50 (max number of requests per second - default 15)");
-  console.log();
-  process.exit(1);
-} else if (argv.u) {
-  if (argv.cookie) {
-    http.cookies(argv.cookie);
+async function asyncForEach(array, callback) {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array)
   }
+}
 
-  if (argv.input || argv.wordlist) {
-    if (argv.input) {
-      dictionaryFile = argv.input;
-    } else {
-      dictionaryFile = argv.wordlist;
+async function prepPaths(payloadArray) {
+  if (argv.help || argv.h || !argv.u) {
+    console.log(color.green("\n--[Dirp Examples]--\n"));
+    console.log("./dirp -u 'https://foo.bar/' --wordlist=/path/to/wordlist.txt");
+    console.log("./dirp -u 'https://foo.bar/<INSERT>.jsp'");
+    console.log(
+      "./dirp -u 'https://foo.bar/' --cookie='sessionid=12345;foo=bar;'"
+    );
+    console.log("./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'");
+    console.log("           '--rate 50 (max number of requests per second - default 15)");
+    console.log("           '--lowercase (lowercase all paths)");
+    console.log("           '--ext .php (Replace any extensions with user defined value)");
+    console.log("           '--debug (debug mode and show every request/response)");
+    console.log();
+    process.exit(1);
+  } else if (argv.u) {
+
+    if (argv.string) {
+      testString = argv.string;
     }
-  }
 
-  if (argv.string) {
-    testString = argv.string;
-  }
+    if (argv.debug) {
+      debug = true;
+    }
 
-  if (argv.debug) {
-    debug = true;
-  }
 
-  fs.readFile(dictionaryFile, "utf8", function(err, data) {
-    
-    var payloadArray = data.toString().split("\n");
-    
+    let customBackups = genCustomBackupFiles(argv.u.split('/')[2]);
+
+
+    if (argv.ext) {
+      payloadArray = await modifyExtPaths(payloadArray, argv.ext);
+    }
+
+    if (argv.lowercase) {
+      payloadArray = await lowercase(payloadArray);
+    }
+
+
+    //payloadArray = customBackups.concat(payloadArray);
+    totalChecks = payloadArray.length;
+
     const jobCount = payloadArray.length
-    if (jobCount <= rate){
-      console.log("Try lowering the --rate option")
-      process.exit(0)
-      rate = jobCount;
-    }
+
     console.log(
       "\n[*] Using wordlist which contains %s checks\n\n",
       payloadArray.length
     );
 
-    var arrays = [];
 
-    var httpjob = function(args) {
-      if (argv.u.match(/((<INSERT\s*?.*?>))/gi)) {
-        if (argv.trim){
-          args = args.replace(/(\..+)/gi, "")
-        }
-        var payload = argv.u.replace(/((<INSERT\s*?.*?>))/gi, args);
-        
-        http.get(argv.u, args, testString, debug, payload);
-      } else {
-        http.get(argv.u, args, testString, debug);
-      }
-    };
-    
-    for (var i = 0; i < payloadArray.length; i++) {
-      throttle(function() {
-        pay = payloadArray.splice(0, 1)
-        httpjob(pay[0])
-      });
+    // return new Promise(function(resolve) {
+    //     resolve(payloadArray)
+    // })
+
+    return payloadArray
+
+
+
+
+    // if (argv.progress){
+    //   setInterval(function () {
+
+    //     count = checkCounter - totalChecks;
+    //     var perCompleted = Math.round(((count / checkCounter) + 1 * 100));
+    //     if (perCompleted - lastPercent > 10 && perCompleted != 100){
+    //       lastPercent = perCompleted;
+    //       perCompleted = perCompleted.toString();
+    //       perCompleted += '% completed';
+
+    //       console.log("[*] " + perCompleted);
+    //     }
+
+
+
+
+    //   }, 500)      
+    // }
+
+
+  }
+
+
+}
+
+async function dirpPath(checks, recurse) {
+  return Promise.map(checks, function (pay) {
+    if (recurse) {
+      pay = `${recurse}/${pay}`;
     }
-    setInterval(function(){
-      
-      count = jobCount - payloadArray.length;
-      
-      if ((count % rate) === 0) {
-        var perCompleted = Math.round(((count / jobCount) * 100));
-        perCompleted = perCompleted.toString();
-        perCompleted += '% completed';
-        if ((count % 1000) === 0){
-          console.log("[*] "+perCompleted);
-        }
-      }
-      if (payloadArray.length === 0){
-        setTimeout(function(){
-          process.exit(0)
-        }, 1500)
-      }
-    }, 1000)
+
+    return new Promise(function (resolve) {
+      resolve(httpz(argv.u, testString, debug, pay))
+    })
+
+  }, { concurrency: rate })
+}
+
+
+function cleanResults(rawRes) {
+  return rawRes.filter(function (el) {
+    return el != null;
   });
 }
-process.on('exit', function() {
-  console.log("\n\n%s checks completed", count);
-  console.log(http.discoveries.length+" matches found\n");
-  var resultsTable = new Table({
-    head: ['Payload', 'Status', 'Length', 'Match'],
-    style : {compact : true, 'padding-left' : 1}
-  });
-  for (i=0;i<http.discoveries.length;i++){
-    resultsTable.push(
-        [http.discoveries[i].url, http.discoveries[i].status, http.discoveries[i].len, http.discoveries[i].match]
-      );
-    //console.log(http.discoveries[i].url + " - [ "+http.discoveries[i].status+" ]")
-  }
-// table.push(
-//     { 'Some key': 'Some value' }
-//   , { 'Another key': 'Another value' }
-// );
 
-console.log(resultsTable.toString());  
-});
+
+(async function () {
+  let data = fs.readFileSync(dictionaryFile, "utf8");
+  var payloadArray = data.toString().split("\n");
+  let e = await prepPaths(payloadArray);
+
+  let results = await dirpPath(e);
+  var filtered = cleanResults(results);
+
+  await asyncForEach(filtered, async (result) => {
+    if (!result.path.includes('//') && result.path != '/' && result.path.length > 2) {
+      pathsToCheck.push(result.path);
+    }
+  })
+
+  if (argv.recurse || argv.r || argv.recursive) {
+    await asyncForEach(pathsToCheck, async (num) => {
+
+      let results = await dirpPath(e, num);
+      var filtered = cleanResults(results);
+      for (i = 0; i < filtered.length; i++) {
+        if (!filtered[i].path.includes('//') && filtered[i].path.length > 2) {
+          pathsToCheck.push(filtered[i].path)
+        }
+      }
+
+    })
+  }
+
+
+
+
+})()
+
+
+// process.on('exit', function () {
+//   console.log("\n\n%s checks completed", count);
+//   console.log(http.discoveries.length + " matches found\n");
+//   var resultsTable = new Table({
+//     head: ['Payload', 'Status', 'Length', 'Match'],
+//     style: { compact: true, 'padding-left': 1 }
+//   });
+//   for (i = 0; i < http.discoveries.length; i++) {
+//     resultsTable.push(
+//       [http.discoveries[i].url, http.discoveries[i].status, http.discoveries[i].len, http.discoveries[i].match]
+//     );
+//     //console.log(http.discoveries[i].url + " - [ "+http.discoveries[i].status+" ]")
+//   }
+//   // table.push(
+//   //     { 'Some key': 'Some value' }
+//   //   , { 'Another key': 'Another value' }
+//   // );
+
+//   console.log(resultsTable.toString());
+// });
