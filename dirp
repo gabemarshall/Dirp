@@ -2,10 +2,13 @@
 
 const Promise = require("bluebird");
 const Sugar = require("sugar");
+const _progress = require('cli-progress');
 
 Sugar.extend();
 const modifyExtPaths = require('./modules/modifyExtPaths');
 const lowercase = require('./modules/lowercase');
+let globalResults = require('./modules/discoveries.js');
+
 const log = console.log;
 var argv = require("yargs").argv,
   httpz = require("./modules/httpz"),
@@ -92,62 +95,52 @@ async function prepPaths(payloadArray) {
     }
 
 
-    //payloadArray = customBackups.concat(payloadArray);
     totalChecks = payloadArray.length;
 
     const jobCount = payloadArray.length
 
     console.log(
-      "\n[*] Using wordlist which contains %s checks\n\n",
+      "\n[*] Using wordlist which contains %s checks\n",
       payloadArray.length
     );
 
 
-    // return new Promise(function(resolve) {
-    //     resolve(payloadArray)
-    // })
-
     return payloadArray
-
-
-
-
-    // if (argv.progress){
-    //   setInterval(function () {
-
-    //     count = checkCounter - totalChecks;
-    //     var perCompleted = Math.round(((count / checkCounter) + 1 * 100));
-    //     if (perCompleted - lastPercent > 10 && perCompleted != 100){
-    //       lastPercent = perCompleted;
-    //       perCompleted = perCompleted.toString();
-    //       perCompleted += '% completed';
-
-    //       console.log("[*] " + perCompleted);
-    //     }
-
-
-
-
-    //   }, 500)      
-    // }
-
 
   }
 
 
 }
 
-async function dirpPath(checks, recurse) {
+async function dirpPath(checks, recurse, clibar) {
+  let bar;
+  if (typeof(recurse)!='String'){
+    bar = recurse;
+    recurse = false;
+  } else {
+    bar = clibar;
+  }
+
+  bar.start(checks.length, 0);
+
+
+  bar.update(0, {
+    path: '...',
+    recent: '',
+    discoveries: globalResults.getDiscoveries().join("\n"),
+  });
+
   return Promise.map(checks, function (pay) {
     if (recurse) {
       pay = `${recurse}/${pay}`;
     }
 
     return new Promise(function (resolve) {
-      resolve(httpz(argv.u, testString, debug, pay))
+      resolve(httpz(argv.u, testString, debug, pay, bar))
     })
 
   }, { concurrency: rate })
+
 }
 
 
@@ -159,11 +152,18 @@ function cleanResults(rawRes) {
 
 
 (async function () {
+
   let data = fs.readFileSync(dictionaryFile, "utf8");
   var payloadArray = data.toString().split("\n");
   let e = await prepPaths(payloadArray);
-
-  let results = await dirpPath(e);
+  let bar = new _progress.Bar({
+    format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} | Path: {path} | Results: {discoveries} {recent} ',
+    barCompleteChar: '\u2588',
+    forceRedraw: true,
+    barIncompleteChar: '\u2591',
+    hideCursor: true
+  });
+  let results = await dirpPath(e, bar);
   var filtered = cleanResults(results);
 
   await asyncForEach(filtered, async (result) => {
@@ -175,7 +175,7 @@ function cleanResults(rawRes) {
   if (argv.recurse || argv.r || argv.recursive) {
     await asyncForEach(pathsToCheck, async (num) => {
 
-      let results = await dirpPath(e, num);
+      let results = await dirpPath(e, num, bar);
       var filtered = cleanResults(results);
       for (i = 0; i < filtered.length; i++) {
         if (!filtered[i].path.includes('//') && filtered[i].path.length > 2) {
@@ -184,6 +184,10 @@ function cleanResults(rawRes) {
       }
 
     })
+  } else {
+    bar.stop();
+    console.log("");
+    console.log(globalResults.getDiscoveries().join("\n"))
   }
 
 

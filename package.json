@@ -16,6 +16,7 @@
     "body-parser": "*",
     "cheerio": "*",
     "cli-color": "*",
+    "cli-progress": "^3.3.1",
     "cli-table": "^0.3.1",
     "ecstatic": "*",
     "events": "*",

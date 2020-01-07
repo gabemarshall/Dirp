@@ -1,10 +1,12 @@
 const argv = require("yargs").argv
 const hash = require('tlsh');
 const helpers = require('./helpers.js');
+const color = require("cli-color");
 const levenshtein = require('fast-levenshtein');
 const waitFor = (ms) => new Promise(r => setTimeout(r, ms))
 let DigestHashBuilder = require('../node_modules/tlsh/lib/digests/digest-hash-builder');
 let rp = require('request-promise');
+let globalResults = require('./discoveries.js');
 let proxy = '';
 let delay = argv.delay || false;
 
@@ -41,21 +43,30 @@ function prepareRequest(uri, path) {
 
 }
 
-let compareType = 'tlsh';
+//let compareType = 'tlsh';
 let uniqBodyHash;
 
 function compareResponses(bodyOne, bodyTwo) {
-    if (compareType === 'tlsh') {
-        let bodyTwoHash = hash(bodyTwo);
-        let digest1 = new DigestHashBuilder().withHash(uniqHash).build();
-        let digest2 = new DigestHashBuilder().withHash(bodyTwoHash).build();
+        let compareResults = {}
+        let points;
+        let scoreType;
+        try {
+            scoreType='tlsh';
+            let bodyOneHash = hash(bodyOne);
+            let bodyTwoHash = hash(bodyTwo);
+            let digest1 = new DigestHashBuilder().withHash(bodyOneHash).build();
+            let digest2 = new DigestHashBuilder().withHash(bodyTwoHash).build();
+            points = digest2.calculateDifference(digest1, true);
+        } catch(err){
+            points = levenshtein.get(bodyOne, bodyTwo)
 
-        let score = digest2.calculateDifference(digest1, true);
-        return score;
-    } else {
-        let distance = levenshtein.get(bodyOne, bodyTwo)
-        return distance;
-    }
+
+            scoreType = 'lev'
+        }
+        compareResults = {points: points, type: scoreType}
+
+        return compareResults
+
 }
 let uniqValue = 'f5e0548a3be37b529bf5d11669';
 let uniqBody = '';
@@ -64,7 +75,7 @@ let uniqueTest = prepareRequest(argv.u, uniqValue);
 let method = 'GET'; // Default method to use
 
 if (argv.method) {
-	 method = argv.method.toUpperCase();
+    method = argv.method.toUpperCase();
 }
 let options = {};
 options.strictSSL = false;
@@ -78,24 +89,25 @@ options.followAllRedirects = false;
 options.simple = false;
 
 rp(options).then(function (response) {
-    if (response.body.length < 512) {
-        compareType = 'lev'
-        uniqBody = response.body;
-    } else {
-        uniqHash = hash(response.body);
-
-    }
-    if (argv.debug){
+    uniqBody = response.body;
+    // if (response.body.length < 512) {
+    //     compareType = 'lev'
+    //
+    // } else {
+    //     uniqHash = hash(response.body);
+    //
+    // }
+    if (argv.debug) {
         console.log(`Debug - length of first request ${response.body.length}`);
     }
 
     //var hash1 = hash(response.body);
     //console.log(hash1);
-    //process.exit(1);
+
 })
 
 //argv.u, testString, debug, pay
-module.exports = async function (uri, testString, debug, path) {
+module.exports = async function (uri, testString, debug, path, bar) {
     let method = 'GET'; // Default method to use
     if (argv.method) {
         method = argv.method.toUpperCase();
@@ -112,14 +124,17 @@ module.exports = async function (uri, testString, debug, path) {
     options.followRedirect = false;
     options.followAllRedirects = false;
     options.simple = false;
-    if (delay){
-        
-        if (debug){
-            console.log(`Waiting ${delay} miliseconds`);    
+    if (delay) {
+
+        if (debug) {
+            console.log(`Waiting ${delay} miliseconds`);
         }
-        
+
         await waitFor(delay);
     }
+
+
+
     return rp(options).then(function (response) {
         //response.httpVersion
         //response.statusCode
@@ -140,37 +155,69 @@ module.exports = async function (uri, testString, debug, path) {
             let matches = matchy.length
         } catch (err) {
 
+
         }
 
-
+        let discStr;
         try {
-  //          if(response.statusCode===404){console.log(1);process.exit(1)};
+
             if (argv.compare) {
+
+                //console.log(response.body.length);
+
                 let score = compareResponses(response.body, uniqBody);
-                if (argv.debug){console.log(`Debug => ${compareType} score of ${score}`)}
-                if (score > 50) {
-                    console.log(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
-                    return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
+
+
+                if (argv.debug) { console.log(`Debug => ${score.type} score of ${score.points}`) }
+
+                if (score.type === "tlsh"){
+
+                    if (score.points > 50) {
+                        //console.log(color.yellow(`${finalPathStr} ${score.points}`))
+
+                        globalResults.latestDiscovery(path)
+                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+
+
+                        return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
+                    }
+                } else {
+                    //console.log(color.yellow(`DEBUG: Using lev distance: ${score.points}`));
+                    if (score.points != 1206) {
+                        globalResults.latestDiscovery(path)
+                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+
+                        return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
+                    }
                 }
-            } else if (response.statusCode === argv.status){
-              //process.exit(1)
-								console.log(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
-							 	return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
+
+
+
+            } else if (response.statusCode === argv.status) {
+                globalResults.latestDiscovery(path)
+                globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+                return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
             }
-          else {
+            else {
                 if (response.statusCode != 404 && !argv.status) {
                     if ((response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 403 || response.statusCode === 401 || response.statusCode == 405 || response.statusCode === 500)) {
-                        //if (compareResponses(response.body, uniqBody) > 50){
-                        console.log(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+                        globalResults.latestDiscovery(path)
+                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
                         return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
                         //}
 
                     }
                 }
             }
+            bar.increment(1, {
+                path: path,
+                recent: globalResults.latestDiscovery(),
+                discoveries: globalResults.getDiscoveries().length.toString(),
+            });
 
 
         } catch (err) {
+
 
         }
 
