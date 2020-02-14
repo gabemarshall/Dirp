@@ -8,10 +8,18 @@ Sugar.extend();
 const modifyExtPaths = require('./modules/modifyExtPaths');
 const lowercase = require('./modules/lowercase');
 let globalResults = require('./modules/discoveries.js');
+let globalBar;
 
 const log = console.log;
+
+let httpz;
+try {
+  httpz = require("./modules/httpz")
+} catch (err) {
+
+}
+
 var argv = require("yargs").argv,
-  httpz = require("./modules/httpz"),
   genCustomBackupFiles = require('./modules/customBackupFiles'),
   pathsToCheck = [],
   color = require("cli-color"),
@@ -70,6 +78,7 @@ async function prepPaths(payloadArray) {
     console.log("           '--lowercase (lowercase all paths)");
     console.log("           '--ext .php (Replace any extensions with user defined value)");
     console.log("           '--debug (debug mode and show every request/response)");
+
     console.log();
     process.exit(1);
   } else if (argv.u) {
@@ -114,21 +123,23 @@ async function prepPaths(payloadArray) {
 
 async function dirpPath(checks, recurse, clibar) {
   let bar;
-  if (typeof(recurse)!='String'){
+  if (typeof (recurse) != 'String') {
     bar = recurse;
     recurse = false;
   } else {
     bar = clibar;
   }
 
-  bar.start(checks.length, 0);
+  if (!argv.debug) {
+    bar.start(checks.length, 1);
 
 
-  bar.update(0, {
-    path: '...',
-    recent: '',
-    discoveries: globalResults.getDiscoveries().join("\n"),
-  });
+    bar.update(0, {
+      reqPath: '...',
+      discoveries: '',
+    });
+  }
+
 
   return Promise.map(checks, function (pay) {
     if (recurse) {
@@ -152,17 +163,25 @@ function cleanResults(rawRes) {
 
 
 (async function () {
+  let data;
+  let payloadArray;
+  try {
+    data = fs.readFileSync(dictionaryFile, "utf8");
+    payloadArray = data.toString().split("\n");
+  } catch (e) {
 
-  let data = fs.readFileSync(dictionaryFile, "utf8");
-  var payloadArray = data.toString().split("\n");
+  }
+
   let e = await prepPaths(payloadArray);
+
   let bar = new _progress.Bar({
-    format: '{bar} {percentage}% | ETA: {eta}s | {value}/{total} | Path: {path} | Results: {discoveries} {recent} ',
+    format: '{bar} {percentage}% ' + '| ETA: {eta}s | {value}/{total} | Discovered: {discoveries} ',
     barCompleteChar: '\u2588',
     forceRedraw: true,
     barIncompleteChar: '\u2591',
     hideCursor: true
   });
+  globalBar = bar;
   let results = await dirpPath(e, bar);
   var filtered = cleanResults(results);
 
@@ -185,9 +204,10 @@ function cleanResults(rawRes) {
 
     })
   } else {
-    bar.stop();
-    console.log("");
-    console.log(globalResults.getDiscoveries().join("\n"))
+    if (!argv.debug) {
+      bar.stop();
+    }
+
   }
 
 
@@ -196,23 +216,52 @@ function cleanResults(rawRes) {
 })()
 
 
-// process.on('exit', function () {
-//   console.log("\n\n%s checks completed", count);
-//   console.log(http.discoveries.length + " matches found\n");
-//   var resultsTable = new Table({
-//     head: ['Payload', 'Status', 'Length', 'Match'],
-//     style: { compact: true, 'padding-left': 1 }
-//   });
-//   for (i = 0; i < http.discoveries.length; i++) {
-//     resultsTable.push(
-//       [http.discoveries[i].url, http.discoveries[i].status, http.discoveries[i].len, http.discoveries[i].match]
-//     );
-//     //console.log(http.discoveries[i].url + " - [ "+http.discoveries[i].status+" ]")
-//   }
-//   // table.push(
-//   //     { 'Some key': 'Some value' }
-//   //   , { 'Another key': 'Another value' }
-//   // );
+function drawTable() {
+  var resultsTable = new Table({
+    head: ['Method', 'Url', 'Length', 'Status'],
+    style: { compact: true, 'padding-left': 1 }
+  });
+  let finalDiscoveries = globalResults.getDiscoveries();
+  for (i = 0; i < finalDiscoveries.length; i++) {
+    let resStrSplit = finalDiscoveries[i].split(" ");
+    resultsTable.push(
+      [resStrSplit[0], resStrSplit[1], resStrSplit[2], resStrSplit[3]]
+    );
+  }
+  console.log(resultsTable.toString());
+}
+let hasPrintedResults = false;
+function handle(signal) {
 
-//   console.log(resultsTable.toString());
-// });
+  globalBar.stop();
+  if (signal === "SIGINT") {
+    console.log(globalResults.getDiscoveries().join("\n"))
+    hasPrintedResults = true;
+  } else {
+    if (!hasPrintedResults) {
+      drawTable();
+      hasPrintedResults = true;
+    }
+  }
+
+  process.exit(0);
+}
+
+process.on('SIGINT', handle);
+process.on('SIGINT', handle);
+process.on('SIGTERM', handle);
+process.on('exit', function () {
+
+  handle();
+
+
+  //console.log(http.discoveries.length + " matches found\n");
+
+  // table.push(
+  //     { 'Some key': 'Some value' }
+  //   , { 'Another key': 'Another value' }
+  // );
+
+  // console.log(resultsTable.toString());
+});
+

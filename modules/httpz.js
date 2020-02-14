@@ -20,8 +20,13 @@ if (argv.cookie) {
 }
 
 function prepareRequest(uri, path) {
-    path = path.replace('//', '/');
+
+    if (path[0] != '/') {
+        path = "/" + path;
+    }
+
     if (argv.u.match(/((<INSERT\s*?.*?>))/gi)) {
+
         if (argv.trim) {
             path = path.replace(/(\..+)/gi, "")
         }
@@ -31,13 +36,14 @@ function prepareRequest(uri, path) {
         //http.get(argv.u, args, testString, debug, payload);
     } else {
 
-        var payload = path;
+        var payload = uri + path;
         var nth = 0;
         payload = payload.replace(/\/\//g, function (match, i, original) {
             nth++;
             return (nth === 2) ? "/" : match;
         });
-        return uri + payload;
+
+        return payload;
 
     }
 
@@ -47,25 +53,25 @@ function prepareRequest(uri, path) {
 let uniqBodyHash;
 
 function compareResponses(bodyOne, bodyTwo) {
-        let compareResults = {}
-        let points;
-        let scoreType;
-        try {
-            scoreType='tlsh';
-            let bodyOneHash = hash(bodyOne);
-            let bodyTwoHash = hash(bodyTwo);
-            let digest1 = new DigestHashBuilder().withHash(bodyOneHash).build();
-            let digest2 = new DigestHashBuilder().withHash(bodyTwoHash).build();
-            points = digest2.calculateDifference(digest1, true);
-        } catch(err){
-            points = levenshtein.get(bodyOne, bodyTwo)
+    let compareResults = {}
+    let points;
+    let scoreType;
+    try {
+        scoreType = 'tlsh';
+        let bodyOneHash = hash(bodyOne);
+        let bodyTwoHash = hash(bodyTwo);
+        let digest1 = new DigestHashBuilder().withHash(bodyOneHash).build();
+        let digest2 = new DigestHashBuilder().withHash(bodyTwoHash).build();
+        points = digest2.calculateDifference(digest1, true);
+    } catch (err) {
+        points = levenshtein.get(bodyOne, bodyTwo)
 
 
-            scoreType = 'lev'
-        }
-        compareResults = {points: points, type: scoreType}
+        scoreType = 'lev'
+    }
+    compareResults = { points: points, type: scoreType }
 
-        return compareResults
+    return compareResults
 
 }
 let uniqValue = 'f5e0548a3be37b529bf5d11669';
@@ -113,6 +119,7 @@ module.exports = async function (uri, testString, debug, path, bar) {
         method = argv.method.toUpperCase();
     }
     let finalPathStr = prepareRequest(uri, path)
+
     let options = {}
     options.headers = { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36', 'Cookie': cooks };
     options.method = method;
@@ -133,7 +140,16 @@ module.exports = async function (uri, testString, debug, path, bar) {
         await waitFor(delay);
     }
 
-
+    path = path.match(/([ -~]+)/)
+    if (!path) {
+        path = '...';
+    }
+    if (!argv.debug) {
+        bar.increment(1, {
+            reqPath: path,
+            discoveries: globalResults.getDiscoveries().length.toString(),
+        });
+    }
 
     return rp(options).then(function (response) {
         //response.httpVersion
@@ -144,8 +160,11 @@ module.exports = async function (uri, testString, debug, path, bar) {
         //}
         //console.log(response.body)
         if (debug) {
-            console.log(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+            let debugStr = method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`;
+            console.log(debugStr);
         }
+
+
         let firstMatch = 'None';
         let matches = 0;
         try {
@@ -166,11 +185,8 @@ module.exports = async function (uri, testString, debug, path, bar) {
                 //console.log(response.body.length);
 
                 let score = compareResponses(response.body, uniqBody);
-
-
-                if (argv.debug) { console.log(`Debug => ${score.type} score of ${score.points}`) }
-
-                if (score.type === "tlsh"){
+                //if (argv.debug) { console.log(`Debug => ${score.type} score of ${score.points}`) }
+                if (score.type === "tlsh") {
 
                     if (score.points > 50) {
                         //console.log(color.yellow(`${finalPathStr} ${score.points}`))
@@ -193,13 +209,26 @@ module.exports = async function (uri, testString, debug, path, bar) {
 
 
 
-            } else if (response.statusCode === argv.status) {
-                globalResults.latestDiscovery(path)
-                globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
-                return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
+            } else if (argv.status) {
+                if (argv.inverse) {
+                    if (response.statusCode != argv.status) {
+                        globalResults.latestDiscovery(path)
+                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+                        return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
+                    }
+                } else {
+                    if (response.statusCode === argv.status) {
+                        globalResults.latestDiscovery(path)
+                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+                        return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
+                    }
+                }
+
             }
             else {
+
                 if (response.statusCode != 404 && !argv.status) {
+
                     if ((response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 403 || response.statusCode === 401 || response.statusCode == 405 || response.statusCode === 500)) {
                         globalResults.latestDiscovery(path)
                         globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
@@ -209,14 +238,13 @@ module.exports = async function (uri, testString, debug, path, bar) {
                     }
                 }
             }
-            bar.increment(1, {
-                path: path,
-                recent: globalResults.latestDiscovery(),
-                discoveries: globalResults.getDiscoveries().length.toString(),
-            });
+
+
+
 
 
         } catch (err) {
+
 
 
         }
@@ -227,6 +255,7 @@ module.exports = async function (uri, testString, debug, path, bar) {
 
     })
         .catch(function (err) {
+
             //console.log(err);
             // Crawling failed...
 

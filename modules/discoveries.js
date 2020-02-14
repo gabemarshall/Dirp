@@ -1,17 +1,25 @@
 const color = require("cli-color");
 let DISCOVERIES = [];
-let latestDiscovery = ' ';
+let latestDiscovery = 'none';
+let REQUESTS = [];
 
-exports.addDiscovery = function(discovery){
+exports.getCount = function () {
+  return REQUESTS;
+}
+exports.addCount = function () {
+  REQUESTS = REQUESTS + 1;
+}
+
+exports.addDiscovery = function (discovery) {
   DISCOVERIES.push(discovery);
 }
 
-exports.getDiscoveries = function(){
+exports.getDiscoveries = function () {
   return DISCOVERIES;
 }
-exports.latestDiscovery = function(path){
+exports.latestDiscovery = function (path) {
 
-  if (path){
+  if (path) {
     path = `/${path}`;
     latestDiscovery = `(${color.green(path)})`;
   }
