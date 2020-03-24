@@ -1,3 +1,11 @@
+index
+%20/
+%2520/
+%2540google.com
+%255cgoogle.com
+%2fu005cgoogle.com
+%c5%9cgoogle.com
+.DS_Store
 .bash_history
 .bashrc
 .cache
@@ -7,6 +15,7 @@
 .forward
 .git
 .git/HEAD
+.gitignore
 .history
 .hta
 .htaccess
@@ -51,7 +60,6 @@
 13
 14
 15
-adfs/ls/IdpInitiatedSignOn.aspx
 1990
 1991
 1992
@@ -157,6 +165,7 @@ CYBERDOCS25
 CYBERDOCS31
 ChangeLog
 Computers
+ConsoleServlet
 Contact
 ContactUs
 Content
@@ -171,6 +180,7 @@ Documents and Settings
 Download
 Downloads
 E
+EJBInvokerServlet
 Education
 English
 Entertainment
@@ -180,6 +190,7 @@ Extranet
 F
 FAQ
 FCKeditor
+FileDownload.jsp
 G
 Games
 Global
@@ -190,6 +201,7 @@ Health
 Help
 Home
 I
+IDC.php
 INSTALL_admin
 Image
 Images
@@ -197,7 +209,9 @@ Index
 Indy_admin
 Internet
 J
+JMXInvokerServlet
 JMXSoapAdapter
+JasperWSWrapper/
 Java
 L
 LICENSE
@@ -238,7 +252,6 @@ Press
 Privacy
 Products
 Program
-Program Files
 Projects
 Publications
 R
@@ -264,6 +277,7 @@ Search
 Security
 Server
 ServerAdministrator
+ServerInfo.jsp
 Services
 Servlet
 Servlets
@@ -428,6 +442,7 @@ achitecture
 acp
 act
 action
+action_rules.shtml
 actions
 activate
 active
@@ -451,6 +466,7 @@ address_book
 addressbook
 addresses
 addtocart
+adfs/ls/IdpInitiatedSignOn.aspx
 adlog
 adlogger
 adm
@@ -459,8 +475,13 @@ admin-admin
 admin-console
 admin-interface
 admin.cgi
+admin.nsf
 admin.php
 admin.pl
+admin/
+admin/index.php?userid=1&action=edituser&owluser=1
+admin/index.php?userid=1&newuser
+admin/login.aspx
 admin1
 admin2
 admin3
@@ -589,8 +610,42 @@ apac
 apache
 apanel
 apc
+apc.php
 apexec
 api
+api/v1/account/accounts
+api/v1/account/accounts/summaries
+api/v1/account/oauth/ticket
+api/v1/account/oauth/token
+api/v1/account/permissions
+api/v1/account/user
+api/v1/account/user/assets
+api/v1/account/user/delete
+api/v1/account/user/profile
+api/v1/account/user/register
+api/v1/account/user/resend-verification
+api/v1/account/user/verify
+api/v1/account/userAccountAssignments
+api/v1/account/userPreferences
+api/v1/account/users
+api/v1/account/users/password
+api/v1/account/users/summaries
+api/v1/asset/asset
+api/v1/asset/assets
+api/v1/common/accounts
+api/v1/common/connections
+api/v1/common/notifications
+api/v1/common/preferences
+api/v1/common/users/password
+api/v1/delta/deviceCatalog/deviceTypes
+api/v1/delta/deviceCatalog/devices
+api/v1/delta/deviceCatalog/manufacturers
+api/v1/delta/monitoring/accounts/
+api/v1/delta/order
+api/v1/delta/userAssets
+api/v1/history/history
+api/v1/monitoring/accounts
+api/v1/monitoring/address-check
 apis
 apl
 apm
@@ -692,6 +747,7 @@ autologin
 automatic
 automation
 automotive
+autopass
 aux
 av
 avatar
@@ -707,7 +763,7 @@ awstats.conf
 axis
 axis-admin
 axis2
-axis2-admin
+axis2-admin/
 axs
 az
 b
@@ -723,6 +779,7 @@ backgrounds
 backoffice
 backup
 backup-db
+backup.tar.gz
 backup2
 backup_migrate
 backups
@@ -845,6 +902,7 @@ boutique
 box
 boxes
 br
+branch-format
 brand
 brands
 broadband
@@ -1143,6 +1201,7 @@ config
 config.local
 configs
 configuration
+configuration/administration/users
 configure
 confirm
 confirmed
@@ -1228,6 +1287,7 @@ crash
 crashes
 create
 create_account
+create_user/
 createaccount
 createbutton
 creation
@@ -1273,6 +1333,7 @@ cute
 cutesoft_client
 cv
 cvs
+cvsweb
 cxf
 cy
 cyberworld
@@ -1287,8 +1348,11 @@ dan
 dana-na
 dark
 dashboard
+dashboard/jmxtree/
 dat
 data
+data/login
+dataSources.xml
 database
 database_administration
 databases
@@ -1512,6 +1576,7 @@ ecommerce
 ecrire
 edge
 edgy
+edid.php
 edit
 edit_link
 edit_profile
@@ -1585,6 +1650,7 @@ english
 enterprise
 entertainment
 entries
+entries/
 entropybanner
 entry
 env
@@ -1600,6 +1666,7 @@ errata
 error
 error-espanol
 error-log
+error.json
 error404
 error_docs
 error_log
@@ -1635,6 +1702,7 @@ ewebeditor
 ews
 ex
 example
+example.com/..%252f
 examples
 excalibur
 excel
@@ -1651,6 +1719,7 @@ exiar
 exit
 expert
 experts
+exploit
 exploits
 explore
 explorer
@@ -1756,6 +1825,7 @@ fn
 focus
 foia
 folder
+folder?dcPath=ha-datacenter
 folder_new
 folders
 font
@@ -1890,6 +1960,7 @@ getconfig
 getfile
 getjobid
 getout
+gettext.php
 gettxt
 gfen
 gfx
@@ -1940,6 +2011,10 @@ granted
 grants
 graph
 graphics
+graphiql
+graphql
+graphql.php?debug=1
+graphql/console/
 green
 greybox
 grid
@@ -1949,6 +2024,7 @@ groupcp
 groups
 groupware
 gs
+gs-guide-websocket
 gsm
 guess
 guest
@@ -2044,6 +2120,7 @@ htdoc
 htdocs
 htm
 html
+html/
 htmlarea
 htmls
 htpasswd
@@ -2205,6 +2282,8 @@ invite
 invoice
 invoices
 invoker
+invoker/EJBInvokerServlet
+invoker/JMXInvokerServerlet
 ioncube
 ip
 ipc
@@ -2251,6 +2330,7 @@ javascripts
 javax
 jboss
 jbossas
+jbossmq-httpil/HTTPServerILServlet
 jbossws
 jdbc
 jdk
@@ -2269,6 +2349,7 @@ john
 join
 joinrequests
 joomla
+jos.php
 journal
 journals
 jp
@@ -2416,6 +2497,7 @@ live
 livechat
 livehelp
 livesupport
+livevideo.html
 livezilla
 lo
 load
@@ -2424,6 +2506,7 @@ loading
 loc
 local
 locale
+localplay.php
 localstart
 location
 locations
@@ -2443,6 +2526,8 @@ logging
 login
 login-redirect
 login-us
+login.action
+login.php
 login1
 login_db
 login_sendpass
@@ -2523,6 +2608,7 @@ manage
 managed
 management
 manager
+manager/html/
 manifest
 manifest.mf
 mantis
@@ -2560,6 +2646,7 @@ mdb-database
 me
 media
 media_center
+media_settings.html
 mediakit
 mediaplayer
 medias
@@ -2630,6 +2717,7 @@ mm5
 mms
 mmwip
 mo
+mob
 mobi
 mobil
 mobile
@@ -2712,6 +2800,7 @@ myhomework
 myicons
 mypage
 myphpnuke
+myserver.key
 myspace
 mysql
 mysqld
@@ -2868,6 +2957,7 @@ orderdownloads
 ordered
 orderfinished
 orders
+orders/3
 orderstatus
 ordertotal
 org
@@ -2947,6 +3037,7 @@ patch
 patches
 patents
 path
+paths
 pay
 payment
 payment_gateway
@@ -3072,7 +3163,9 @@ plenty
 plesk-stat
 pls
 plugin
+plugin-cfg.xml
 plugins
+plugins/access.ssh/checkInstall.php
 plus
 plx
 pm
@@ -3089,6 +3182,7 @@ podcasts
 poi
 poker
 pol
+polarbearcms
 policies
 policy
 politics
@@ -3344,6 +3438,7 @@ rating0
 ratings
 rb
 rcLogin
+rcadmin
 rcp
 rcs
 rct
@@ -3442,6 +3537,7 @@ request
 requested
 requests
 require
+requires
 requisite
 requisition
 requisitions
@@ -3468,6 +3564,7 @@ restore
 restored
 restricted
 result
+resultimage.php
 results
 resume
 resumes
@@ -3574,6 +3671,7 @@ scriptlets
 scriptlibrary
 scriptresource
 scripts
+scripts.php
 sd
 sdk
 se
@@ -3633,6 +3731,7 @@ serve
 server
 server-info
 server-status
+server.key
 server_admin_small
 server_stats
 servers
@@ -3644,6 +3743,7 @@ servlets
 servlets-examples
 sess
 session
+session/login.php
 sessionid
 sessions
 set
@@ -3881,6 +3981,7 @@ statistik
 stats
 statshistory
 status
+statusFilter.php
 statusicon
 stock
 stoneedge
@@ -3972,6 +4073,7 @@ sysmanager
 system
 system-admin
 system-administration
+system/console
 system_admin
 system_administration
 system_web
@@ -4247,6 +4349,7 @@ us
 usa
 usage
 user
+userAdmin.php
 user_upload
 useradmin
 userapp
@@ -4319,7 +4422,9 @@ ver1
 ver2
 verify
 version
+version.xml
 verwaltung
+vfolder.ghp
 vfs
 vi
 viagra
@@ -4332,6 +4437,7 @@ view_cart
 viewcart
 viewcvs
 viewer
+viewer_index.shtml
 viewfile
 viewforum
 viewlogin
@@ -4383,12 +4489,14 @@ way-board
 wbboard
 wbsadmin
 wc
+wc.db
 wcs
 wdav
 weather
 web
 web-beans
 web-console
+web-console/ServerInfo.jsp
 web-inf
 web.config
 web.xml
@@ -4492,10 +4600,12 @@ work
 workarea
 workflowtasks
 working
+workorder/FileDownload.jsp
 workplace
 works
 workshop
 workshops
+workspace.xml
 world
 worldpayreturn
 worldwide

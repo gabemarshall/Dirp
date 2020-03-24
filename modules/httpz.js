@@ -9,6 +9,7 @@ let rp = require('request-promise');
 let globalResults = require('./discoveries.js');
 let proxy = '';
 let delay = argv.delay || false;
+let threshold = argv.threshold || 50;
 
 if (argv.proxy) {
     proxy = argv.proxy;
@@ -32,20 +33,22 @@ function prepareRequest(uri, path) {
         }
         var payload = argv.u.replace(/((<INSERT\s*?.*?>))/gi, path);
 
-        return payload.replace(/(\s)/gi, "");
+        payload = payload.replace(/(\s)/gi, "");
         //http.get(argv.u, args, testString, debug, payload);
     } else {
 
         var payload = uri + path;
-        var nth = 0;
-        payload = payload.replace(/\/\//g, function (match, i, original) {
-            nth++;
-            return (nth === 2) ? "/" : match;
-        });
 
-        return payload;
+
+
 
     }
+    var nth = 0;
+    payload = payload.replace(/\/\//g, function (match, i, original) {
+        nth++;
+        return (nth === 2) ? "/" : match;
+    });
+    return payload;
 
 }
 
@@ -65,7 +68,6 @@ function compareResponses(bodyOne, bodyTwo) {
         points = digest2.calculateDifference(digest1, true);
     } catch (err) {
         points = levenshtein.get(bodyOne, bodyTwo)
-
 
         scoreType = 'lev'
     }
@@ -144,14 +146,15 @@ module.exports = async function (uri, testString, debug, path, bar) {
     if (!path) {
         path = '...';
     }
+
+
+    return rp(options).then(function (response) {
     if (!argv.debug) {
         bar.increment(1, {
             reqPath: path,
             discoveries: globalResults.getDiscoveries().length.toString(),
         });
-    }
-
-    return rp(options).then(function (response) {
+    }        
         //response.httpVersion
         //response.statusCode
         //response.statusMessage;
@@ -188,20 +191,20 @@ module.exports = async function (uri, testString, debug, path, bar) {
                 //if (argv.debug) { console.log(`Debug => ${score.type} score of ${score.points}`) }
                 if (score.type === "tlsh") {
 
-                    if (score.points > 50) {
+                    if (score.points > threshold) {
                         //console.log(color.yellow(`${finalPathStr} ${score.points}`))
 
                         globalResults.latestDiscovery(path)
-                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, bar, path);
 
 
                         return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
                     }
                 } else {
                     //console.log(color.yellow(`DEBUG: Using lev distance: ${score.points}`));
-                    if (score.points != 1206) {
+                    if (score.points > threshold) {
                         globalResults.latestDiscovery(path)
-                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, bar, path);
 
                         return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
                     }
@@ -213,13 +216,13 @@ module.exports = async function (uri, testString, debug, path, bar) {
                 if (argv.inverse) {
                     if (response.statusCode != argv.status) {
                         globalResults.latestDiscovery(path)
-                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, bar, path);
                         return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
                     }
                 } else {
                     if (response.statusCode === argv.status) {
                         globalResults.latestDiscovery(path)
-                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, bar, path);
                         return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
                     }
                 }
@@ -230,8 +233,10 @@ module.exports = async function (uri, testString, debug, path, bar) {
                 if (response.statusCode != 404 && !argv.status) {
 
                     if ((response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 403 || response.statusCode === 401 || response.statusCode == 405 || response.statusCode === 500)) {
-                        globalResults.latestDiscovery(path)
-                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`);
+                        globalResults.latestDiscovery(path);
+
+
+                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, bar, path);
                         return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
                         //}
 
