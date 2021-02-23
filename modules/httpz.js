@@ -1,118 +1,20 @@
-const argv = require("yargs").argv
-const hash = require('tlsh');
-const helpers = require('./helpers.js');
+const argv = require("yargs").argv;
+
+const utils = require('./utils.js');
 const color = require("cli-color");
-const levenshtein = require('fast-levenshtein');
+const globals = require("./globals");
 const waitFor = (ms) => new Promise(r => setTimeout(r, ms))
-let DigestHashBuilder = require('../node_modules/tlsh/lib/digests/digest-hash-builder');
+
 let rp = require('request-promise');
 let globalResults = require('./discoveries.js');
-let proxy = '';
+
+let threshold = globals.settings.threshold;
+
+
+let proxy = utils.getProxy();
 let delay = argv.delay || false;
-let threshold = argv.threshold || 50;
+let cooks = utils.checkForCookies();
 
-if (argv.proxy) {
-    proxy = argv.proxy;
-}
-let cooks = "";
-
-if (argv.cookie) {
-    cooks = helpers.parseCookieString(argv.cookie);
-}
-
-function prepareRequest(uri, path) {
-
-    if (path[0] != '/') {
-        path = "/" + path;
-    }
-
-    if (argv.u.match(/((<INSERT\s*?.*?>))/gi)) {
-
-        if (argv.trim) {
-            path = path.replace(/(\..+)/gi, "")
-        }
-        var payload = argv.u.replace(/((<INSERT\s*?.*?>))/gi, path);
-
-        payload = payload.replace(/(\s)/gi, "");
-        //http.get(argv.u, args, testString, debug, payload);
-    } else {
-
-        var payload = uri + path;
-
-
-
-
-    }
-    var nth = 0;
-    payload = payload.replace(/\/\//g, function (match, i, original) {
-        nth++;
-        return (nth === 2) ? "/" : match;
-    });
-    return payload;
-
-}
-
-//let compareType = 'tlsh';
-let uniqBodyHash;
-
-function compareResponses(bodyOne, bodyTwo) {
-    let compareResults = {}
-    let points;
-    let scoreType;
-    try {
-        scoreType = 'tlsh';
-        let bodyOneHash = hash(bodyOne);
-        let bodyTwoHash = hash(bodyTwo);
-        let digest1 = new DigestHashBuilder().withHash(bodyOneHash).build();
-        let digest2 = new DigestHashBuilder().withHash(bodyTwoHash).build();
-        points = digest2.calculateDifference(digest1, true);
-    } catch (err) {
-        points = levenshtein.get(bodyOne, bodyTwo)
-
-        scoreType = 'lev'
-    }
-    compareResults = { points: points, type: scoreType }
-
-    return compareResults
-
-}
-let uniqValue = 'f5e0548a3be37b529bf5d11669';
-let uniqBody = '';
-
-let uniqueTest = prepareRequest(argv.u, uniqValue);
-let method = 'GET'; // Default method to use
-
-if (argv.method) {
-    method = argv.method.toUpperCase();
-}
-let options = {};
-options.strictSSL = false;
-options.proxy = proxy
-options.method = method;
-options.timeout = 9000;
-options.uri = uniqueTest;
-options.resolveWithFullResponse = true;
-options.followRedirect = false;
-options.followAllRedirects = false;
-options.simple = false;
-
-rp(options).then(function (response) {
-    uniqBody = response.body;
-    // if (response.body.length < 512) {
-    //     compareType = 'lev'
-    //
-    // } else {
-    //     uniqHash = hash(response.body);
-    //
-    // }
-    if (argv.debug) {
-        console.log(`Debug - length of first request ${response.body.length}`);
-    }
-
-    //var hash1 = hash(response.body);
-    //console.log(hash1);
-
-})
 
 //argv.u, testString, debug, pay
 module.exports = async function (uri, testString, debug, path, bar) {
@@ -120,7 +22,7 @@ module.exports = async function (uri, testString, debug, path, bar) {
     if (argv.method) {
         method = argv.method.toUpperCase();
     }
-    let finalPathStr = prepareRequest(uri, path)
+    let finalPathStr = utils.prepareRequest(uri, path)
 
     let options = {}
     options.headers = { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36', 'Cookie': cooks };
@@ -133,6 +35,7 @@ module.exports = async function (uri, testString, debug, path, bar) {
     options.followRedirect = false;
     options.followAllRedirects = false;
     options.simple = false;
+
     if (delay) {
 
         if (debug) {
@@ -149,12 +52,12 @@ module.exports = async function (uri, testString, debug, path, bar) {
 
 
     return rp(options).then(function (response) {
-    if (!argv.debug) {
-        bar.increment(1, {
-            reqPath: path,
-            discoveries: globalResults.getDiscoveries().length.toString(),
-        });
-    }        
+        if (!argv.debug) {
+            bar.increment(1, {
+                reqPath: path,
+                discoveries: globalResults.getDiscoveries().length.toString(),
+            });
+        }
         //response.httpVersion
         //response.statusCode
         //response.statusMessage;
@@ -187,28 +90,33 @@ module.exports = async function (uri, testString, debug, path, bar) {
 
                 //console.log(response.body.length);
 
-                let score = compareResponses(response.body, uniqBody);
+                let score = utils.compareResponses(response.body, globals.settings.req_one.body);
                 //if (argv.debug) { console.log(`Debug => ${score.type} score of ${score.points}`) }
-                if (score.type === "tlsh") {
+                //console.log(globals.settings.threshold);
+                if (score.points > globals.settings.threshold && response.statusCode != 404) {
 
-                    if (score.points > threshold) {
-                        //console.log(color.yellow(`${finalPathStr} ${score.points}`))
-
+                    // console.log(`${globals.settings.score_type} => ${globals.settings.threshold}`);
+                    if (argv.status) {
+                        // console.log("HEY WE're HERE");
+                        // process.exit(1);
+                        if (argv.status === response.statusCode) {
+                            globalResults.latestDiscovery(path);
+                            globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, bar, path);
+                        }
+                    } else {
                         globalResults.latestDiscovery(path)
                         globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, bar, path);
-
-
-                        return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
                     }
-                } else {
-                    //console.log(color.yellow(`DEBUG: Using lev distance: ${score.points}`));
-                    if (score.points > threshold) {
-                        globalResults.latestDiscovery(path)
-                        globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, bar, path);
 
-                        return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
-                    }
+
+                    return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
                 }
+                // else if (response.statusCode != globals.settings.req_one.status) {
+                //     globalResults.latestDiscovery(path)
+                //     globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, bar, path);
+
+                //     return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode} (?)]`, path: path }
+                // }
 
 
 
@@ -229,19 +137,26 @@ module.exports = async function (uri, testString, debug, path, bar) {
 
             }
             else {
+                if (globals.settings.req_one.status === 200) {
+                    bar.stop();
+                    console.log("")
+                    console.log(globals.settings.req_one);
+                    console.log(color.red("[!] The application appears to return an HTTP 200 for all requests"));
 
-                if (response.statusCode != 404 && !argv.status) {
-
-                    if ((response.statusCode === 200 || response.statusCode === 301 || response.statusCode === 302 || response.statusCode === 403 || response.statusCode === 401 || response.statusCode == 405 || response.statusCode === 500)) {
+                    console.log(color.green("[+] Hint: You may want to try customizing the HTTP method (ex: --method OPTIONS) and/or use --compare option"));
+                    process.exit(1);
+                } else {
+                    if (response.statusCode != globals.settings.req_one.status) {
                         globalResults.latestDiscovery(path);
 
-
                         globalResults.addDiscovery(method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, bar, path);
-                        return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path }
-                        //}
-
+                        return { raw: method + " " + finalPathStr + " " + response.body.length + " " + `[${response.statusCode}]`, path: path };
                     }
                 }
+
+
+                //}
+
             }
 
 
@@ -250,20 +165,17 @@ module.exports = async function (uri, testString, debug, path, bar) {
 
         } catch (err) {
 
-
+            if (argv.debug) {
+                console.log(err);
+            }
 
         }
 
-
-        //console.log(finalPathStr.split('/')[2] + " " + response.statusCode);
-
-
     })
         .catch(function (err) {
-
-            //console.log(err);
-            // Crawling failed...
-
+            if (argv.debug) {
+                console.log(err);
+            }
         });
 
 }

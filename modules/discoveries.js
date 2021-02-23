@@ -2,7 +2,7 @@ const color = require("cli-color");
 var argv = require("yargs").argv;
 const fs = require('fs');
 let DISCOVERIES = [];
-let latestDiscovery = 'none';
+let latestDiscovery = '';
 let REQUESTS = [];
 
 
@@ -15,12 +15,14 @@ exports.addCount = function () {
 
 async function logToFile(discovery, path) {
 
-  let logFilename = "dirp-"+discovery.split(" ")[1].split("/")[2].split(":")[0].replace(/\./g, "-") + '.log';
+  let logFilename = "dirp-" + discovery.split(" ")[1].split("/")[2].split(":")[0].replace(/\./g, "-") + '.log';
   let stream = fs.createWriteStream(logFilename, { flags: 'a' });
 
-    try {
-      stream.write(discovery + "\n");
-    } catch(e){}
+  try {
+    let fileOut = discovery.split(" ");
+
+    stream.write(`${fileOut[0]} ${fileOut[1].trim()} ${fileOut[2]} ${fileOut[3]}` + "\n");
+  } catch (e) { }
 
   stream.end();
 }
@@ -39,9 +41,12 @@ exports.addDiscovery = async function (discovery, bar, path) {
   let currentBarVal = bar.value;
 
   bar.stop();
-  console.log(discovery);
+  //console.log(path[0]);
+  let consoleOut = discovery.split(" ");
+  console.log(`${consoleOut[0]} ${consoleOut[1].trim()} ${consoleOut[2]} ${consoleOut[3]}`)
+
   bar.start(currentBarTotal, currentBarVal);
-  
+
   DISCOVERIES.push(discovery);
 }
 
