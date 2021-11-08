@@ -14,9 +14,9 @@ let globalBar;
 
 const log = console.log;
 
-let httpz;
+let http_enum;
 try {
-  httpz = require("./modules/httpz");
+  http_enum = require("./modules/http_enum");
 } catch (err) {
 
 }
@@ -67,6 +67,10 @@ if (argv.t) {
   rate = parseInt(argv.t);
 }
 
+if (argv.delay){
+  rate = 1
+}
+
 
 async function asyncForEach(array, callback) {
   for (let index = 0; index < array.length; index++) {
@@ -84,11 +88,12 @@ async function prepPaths(payloadArray) {
     );
     console.log("./dirp -u 'https://foo.bar/' --proxy='http://proxy.host:port'");
     //console.log("           '--rate 50 (max number of requests per second - default 250)");
-    console.log("           '--lowercase (lowercase all paths)");
-    console.log("           '--ext .php (Replace any extensions in your wordlist(s) with a custom value)");
-    console.log("           '--compare Use response comparison to determine status");
-    console.log("           '--threshold [int] (Set threshold for comparison analysis, default 50)");
-    console.log("           '--debug (debug mode and show every request/response)");
+    console.log("           -X or --method (use custom HTTP method)");
+    console.log("           --lowercase (lowercase all paths)");
+    console.log("           --ext .php (Replace any extensions in your wordlist(s) with a custom value)");
+    console.log("           --compare Use response comparison to determine status");
+    console.log("           --threshold [int] (Set threshold for comparison analysis, default 50)");
+    console.log("           --debug (debug mode and show every request/response)");
 
     console.log();
     process.exit(1);
@@ -105,6 +110,7 @@ async function prepPaths(payloadArray) {
 
     let customBackups = genCustomBackupFiles(argv.u.split('/')[2]);
 
+    payloadArray = payloadArray.reverse().concat(customBackups).reverse();
 
     if (argv.ext) {
       payloadArray = await modifyExtPaths(payloadArray, argv.ext);
@@ -158,7 +164,7 @@ async function dirpPath(checks, recurse, clibar) {
     }
 
     return new Promise(function (resolve) {
-      resolve(httpz(argv.u, testString, debug, pay, bar))
+      resolve(http_enum(argv.u, testString, debug, pay, bar))
     })
 
   }, { concurrency: rate })

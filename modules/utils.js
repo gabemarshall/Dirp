@@ -17,6 +17,14 @@ exports.parseCookieString = function (cookies) {
 
 };
 
+
+exports.jitter = function (seconds = 1, jitter = 0.7) {
+  const max = seconds * (1 + jitter)
+  const min = seconds * (1 - jitter)
+
+  return Math.floor(Math.random() * (max - min)) + min
+}
+
 exports.getProxy = function () {
   if (argv.proxy) {
     return argv.proxy;

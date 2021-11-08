@@ -13,6 +13,8 @@ let threshold = globals.settings.threshold;
 
 let proxy = utils.getProxy();
 let delay = argv.delay || false;
+let jitter = argv.jitter || false;
+
 let cooks = utils.checkForCookies();
 
 
@@ -22,6 +24,9 @@ module.exports = async function (uri, testString, debug, path, bar) {
     if (argv.method) {
         method = argv.method.toUpperCase();
     }
+    if (argv.X){
+        method = argv.X.toUpperCase();
+    }
     let finalPathStr = utils.prepareRequest(uri, path)
 
     let options = {}
@@ -29,7 +34,7 @@ module.exports = async function (uri, testString, debug, path, bar) {
     options.method = method;
     options.proxy = proxy;
     options.strictSSL = false;
-    options.timeout = 5000;
+    options.timeout = 15000;
     options.uri = finalPathStr;
     options.resolveWithFullResponse = true;
     options.followRedirect = false;
@@ -37,6 +42,10 @@ module.exports = async function (uri, testString, debug, path, bar) {
     options.simple = false;
 
     if (delay) {
+
+        if (jitter){
+            delay = Math.round(utils.jitter(delay, jitter))
+        }
 
         if (debug) {
             console.log(`Waiting ${delay} miliseconds`);
