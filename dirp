@@ -140,7 +140,7 @@ async function prepPaths(payloadArray) {
 
 async function dirpPath(checks, recurse, clibar) {
   let bar;
-  if (typeof (recurse) != 'String') {
+  if (typeof recurse !== 'string') {
     bar = recurse;
     recurse = false;
   } else {
